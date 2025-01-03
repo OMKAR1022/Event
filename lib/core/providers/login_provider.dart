@@ -63,6 +63,8 @@ class LoginProvider with ChangeNotifier {
   void _showErrorSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
+
     );
+
   }
 }
