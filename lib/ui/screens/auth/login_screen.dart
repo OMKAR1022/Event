@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/providers/login_provider.dart';
+import '../../../core/providers/club/login_provider.dart';
+
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -12,15 +13,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
-    // Screen size reference
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Fetch the selected user type from the provider
     final loginProvider = Provider.of<LoginProvider>(context);
-    final selectedUserType = loginProvider.userType;
 
     return Scaffold(
       backgroundColor: Colors.blueAccent,
@@ -29,14 +28,14 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             // Top Section with Avatar and Titles
             SizedBox(
-              height: screenHeight * 0.45, // Adjust based on screen height
+              height: screenHeight * 0.45,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 70.0),
                     child: CircleAvatar(
-                      radius: screenWidth * 0.15, // Responsive size
+                      radius: screenWidth * 0.15,
                       backgroundImage: const NetworkImage(
                         'https://static.toiimg.com/thumb/msid-70529568,width-400,resizemode-4/70529568.jpg',
                       ),
@@ -46,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text(
                     "MIT ADT",
                     style: TextStyle(
-                      fontSize: 24, // Responsive font size
+                      fontSize: 24,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -65,7 +64,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Bottom Section with Login Form
             Container(
-
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.05,
                 vertical: screenHeight * 0.05,
@@ -79,44 +77,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               child: Column(
                 children: [
-                  // Toggle Buttons for User Type Selection
-                  ToggleButtons(
-                    borderRadius: BorderRadius.circular(8),
-                    isSelected: [
-                      selectedUserType == 'Student',
-                      selectedUserType == 'Club Member',
-                    ],
-                    onPressed: (index) {
-                      loginProvider.setUserType(
-                          index == 0 ? 'Student' : 'Club Member');
-                    },
-                    selectedColor: Colors.white,
-                    fillColor: Colors.blue,
-                    color: Colors.black,
-                    constraints: BoxConstraints(
-                      minHeight: screenHeight * 0.04,
-                      minWidth: screenWidth * 0.4,
-                    ),
-                    children: const [
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text('Student'),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text('Club Member'),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: screenHeight * 0.04),
-
                   // Username Input
                   TextField(
                     controller: usernameController,
                     decoration: InputDecoration(
-                      labelText: selectedUserType == 'Student'
-                          ? 'Enroll No'
-                          : 'Username',
+                      labelText: 'Email',  // Updated to 'Email'
                       prefixIcon: const Icon(Icons.person),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -130,22 +95,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: selectedUserType == 'Student'
-                          ? 'Mobile No'
-                          : 'Password',
+                      labelText: 'Password',  // Simplified to 'Password'
                       prefixIcon: const Icon(Icons.lock),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Text(selectedUserType == 'Club Member'
-                      ? 'Forget Password'
-                      : '',style: TextStyle(color: Colors.blueAccent),),
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.05),
@@ -163,14 +117,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     onPressed: () async {
-                      final loginProvider = Provider.of<LoginProvider>(context, listen: false);
                       final username = usernameController.text.trim();
                       final password = passwordController.text.trim();
-                      // Call the login method and handle the result
-                      final result = await loginProvider.login(username, password,context);
-
-                      // Show a message based on the result
-
+                      // Call the login method from the provider
+                      await loginProvider.login(username, password, context);
                     },
                     child: const Text(
                       'Login',
@@ -181,9 +131,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                   SizedBox(height: screenHeight * 0.03 ),
+                  SizedBox(height: screenHeight * 0.03),
                   const Divider(),
-                  SizedBox(height: screenHeight * 0.02 ),
+                  SizedBox(height: screenHeight * 0.02),
                   Text(
                     "Need an account? Register",
                     style: TextStyle(
@@ -199,4 +149,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-  }
+}

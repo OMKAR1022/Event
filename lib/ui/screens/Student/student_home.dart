@@ -14,7 +14,7 @@ class _StudentHomeState extends State<StudentHome> {
     super.initState();
     // Fetch events when the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<EventProvider>(context, listen: false).fetchEvents();
+      Provider.of<EventProvider>(context, listen: false);
     });
   }
 
@@ -92,6 +92,7 @@ class _StudentHomeState extends State<StudentHome> {
       itemBuilder: (context, index) {
         final event = filteredEvents[index];
         return EventCard(
+          key: ValueKey(event['title']),
           title: event['title'] ?? 'N/A',
           department: event['department'] ?? 'N/A',
           date: event['date'] ?? 'N/A',
