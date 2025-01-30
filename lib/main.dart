@@ -3,7 +3,7 @@ import 'package:mit_event/ui/screens/auth/login_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/providers/event_provider.dart';
-import 'core/providers/login_provider.dart';
+import 'core/providers/club/login_provider.dart';
 
 
 Future<void> main() async {

@@ -4,48 +4,52 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class EventProvider with ChangeNotifier {
   List<Map<String, dynamic>> _events = [];
   bool _isLoading = false;
+  int _totalEvents = 0;
 
   List<Map<String, dynamic>> get events => _events;
   bool get isLoading => _isLoading;
+  int get totalEvents => _totalEvents; // Getter for total events count
 
   EventProvider() {
-    // Initialize the real-time listener
     _initializeRealTimeUpdates();
   }
 
-  Future<void> fetchEvents() async {
+  // Fetch events based on club ID
+  Future<void> fetchEvents(String clubId) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       final supabase = Supabase.instance.client;
 
-      // Fetch events from the Supabase database
+      // Fetch events for the given club ID
       final response = await supabase
-          .from('events') // Table name
-          .select('*') // Select all columns
-          .order('start_time', ascending: true); // Order by start time
+          .from('events')
+          .select('*')
+          .eq('club_id', clubId) // Filter by club ID
+          .order('start_time', ascending: true);
 
       final now = DateTime.now();
 
-      // Update the status field based on time logic
       _events = List<Map<String, dynamic>>.from(response).map((event) {
-        final startTime = DateTime.parse(event['start_time']); // Ensure proper parsing
-        final endTime = DateTime.parse(event['end_time']);   // Ensure proper parsing
+        final startTime = DateTime.parse(event['start_time']);
+        final endTime = DateTime.parse(event['end_time']);
 
+        // Determine event status
         if (now.isAfter(endTime)) {
-          event['status'] = 'Closed'; // Event has ended
-        } else if (now.isBefore(endTime) &&
-            endTime.difference(now).inHours <= 4) {
-          event['status'] = 'Closing Soon'; // Less than or equal to 4 hours remaining
-        } else if (endTime.difference(startTime).inHours > 4) {
-          event['status'] = 'Open'; // More than 4 hours difference
+          event['status'] = 'Closed';
+        } else if (now.isBefore(endTime) && endTime.difference(now).inHours <= 4) {
+          event['status'] = 'Closing Soon';
+        } else {
+          event['status'] = 'Open';
         }
 
         return event;
       }).toList();
 
-      print('Fetched Events: $_events'); // Debug print to verify data
+      _totalEvents = _events.length; // Update the total event count
+
+      print('Fetched Events: $_events');
     } catch (e) {
       debugPrint('Error fetching events: $e');
     } finally {
@@ -54,15 +58,17 @@ class EventProvider with ChangeNotifier {
     }
   }
 
+  // Real-time updates for events
   void _initializeRealTimeUpdates() {
     final supabase = Supabase.instance.client;
 
-    // Set up a listener for real-time changes to the "events" table
     supabase
-        .from('events') // Listen to the "events" table
-        .stream(primaryKey: ['id']) // Specify the primary key of the table
+        .from('events')
+        .stream(primaryKey: ['id'])
         .listen((data) {
-      fetchEvents(); // Re-fetch events whenever the table changes
+      if (_events.isNotEmpty) {
+        fetchEvents(_events.first['club_id']); // Refresh events for the same club
+      }
     });
   }
 }
