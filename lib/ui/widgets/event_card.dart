@@ -1,85 +1,143 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../screens/student/register.dart';
 
-class EventCard extends StatefulWidget {
+class EventCard extends StatelessWidget {
   final String title;
-  final String department;
   final String date;
-  final String start_time;
-  final String status;
+  final String startTime;
+  final String endTime;
+  final String venue;
+  final String category;
+  final int maxParticipants;
+  final String registrationDeadline;
   final String imageUrl;
+  final int id;
+  final int registrations;
+  final VoidCallback onImageTap;
+  final String clubName;
 
   const EventCard({
     Key? key,
     required this.title,
-    required this.department,
     required this.date,
-    required this.start_time,
-    required this.status,
+    required this.startTime,
+    required this.endTime,
+    required this.venue,
+    required this.category,
+    required this.maxParticipants,
+    required this.registrationDeadline,
     required this.imageUrl,
+    required this.id,
+    required this.registrations,
+    required this.onImageTap,
+    required this.clubName,
   }) : super(key: key);
 
-  @override
-  _EventCardState createState() => _EventCardState();
-}
+  String _getEventStatus() {
+    try {
+      final now = DateTime.now();
+      final eventDate = DateTime.parse(date);
+      final deadline = DateTime.parse(registrationDeadline);
 
-class _EventCardState extends State<EventCard> {
-  bool isDeleted = false;
+      // Parse start and end times
+      final startTimeParts = startTime.split(':');
+      final endTimeParts = endTime.split(':');
+      final eventStartTime = DateTime(
+          eventDate.year, eventDate.month, eventDate.day,
+          int.parse(startTimeParts[0]), int.parse(startTimeParts[1])
+      );
+      var eventEndTime = DateTime(
+          eventDate.year, eventDate.month, eventDate.day,
+          int.parse(endTimeParts[0]), int.parse(endTimeParts[1])
+      );
 
-  void resetCard() {
-    setState(() {
-      isDeleted = true;
-    });
+      // If end time is before start time, assume it's the next day
+      if (eventEndTime.isBefore(eventStartTime)) {
+        eventEndTime = eventEndTime.add(Duration(days: 1));
+      }
+
+      print('Debug: Current date: $now');
+      print('Debug: Event date: $eventDate');
+      print('Debug: Event start time: $eventStartTime');
+      print('Debug: Event end time: $eventEndTime');
+      print('Debug: Registration deadline: $deadline');
+
+      if (now.isAfter(eventEndTime)) {
+        return 'Completed';
+      } else if (now.isBefore(deadline)) {
+        if (registrations >= maxParticipants) {
+          return 'Full';
+        }
+        return 'Active';
+      } else {
+        return 'Registration Closed';
+      }
+    } catch (e) {
+      print('Error determining event status: $e');
+      return 'Unknown';
+    }
   }
 
-  void showFullImage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FullScreenImage(imageUrl: widget.imageUrl),
-      ),
-    );
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Active':
+        return Colors.green;
+      case 'Full':
+        return Colors.orange;
+      case 'Registration Closed':
+        return Colors.orange;
+      case 'Completed':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isDeleted) {
-      return const SizedBox.shrink(); // Hide the card when deleted
+    String formattedDate = 'N/A';
+    String formattedTime = 'N/A';
+
+    try {
+      if (date != 'N/A') {
+        final eventDate = DateTime.parse(date);
+        formattedDate = DateFormat('MMM dd, yyyy').format(eventDate);
+        formattedTime = '$startTime - $endTime';
+      }
+    } catch (e) {
+      print('Error formatting date: $e');
     }
 
+    final status = _getEventStatus();
+    final statusColor = _getStatusColor(status);
+
+    print('Debug: Event status: $status');
+
     return Card(
+      elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(15.0),
       ),
+      margin: EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.imageUrl.isNotEmpty)
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(10.0),
-                    topRight: Radius.circular(10.0),
-                  ),
-                  child: GestureDetector(
-                    onTap: showFullImage,
-                    child: Image.network(
-                      widget.imageUrl,
-                      width: double.infinity,
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+          if (imageUrl.isNotEmpty)
+            GestureDetector(
+              onTap: onImageTap,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(15.0),
+                  topRight: Radius.circular(15.0),
                 ),
-              /*  Positioned(
-                  top: 8,
-                  right: 8,
-                  child: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: resetCard,
-                  ),
-                ),*/
-              ],
+                child: Image.network(
+                  imageUrl,
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -89,69 +147,131 @@ class _EventCardState extends State<EventCard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      widget.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[800],
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Chip(
-                      label: Text(
-                        widget.status,
-                        style: const TextStyle(color: Colors.white),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: statusColor),
                       ),
-                      backgroundColor: widget.status == 'Open'
-                          ? Colors.green
-                          : widget.status == 'Closing Soon'
-                          ? Colors.orange
-                          : Colors.red,
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
-                  widget.department,
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  'Organized by: $clubName',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
+                Text(
+                  category,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+                SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                    const SizedBox(width: 4),
+                    Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
+                    SizedBox(width: 4),
                     Text(
-                      widget.date,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      formattedDate,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
-                    const SizedBox(width: 16),
-                    const Icon(Icons.access_time, size: 14, color: Colors.grey),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 16),
+                    Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                    SizedBox(width: 4),
                     Text(
-                      widget.start_time,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      formattedTime,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                Center(
-                  child: TextButton(
-                    onPressed: () {},
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blueAccent,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            offset: Offset(3.0, 3.0),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                    SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        venue,
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '$registrations Registered',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
                           ),
-                        ],
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        Text(
+                          '$maxParticipants',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: registrations / maxParticipants,
+                        backgroundColor: Colors.blue.withOpacity(0.1),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                        minHeight: 6,
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 70),
-                      child: const Text(
-                        'Register',
-                        style: TextStyle(color: Colors.white, fontSize: 13.0),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: status == 'Active' ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Register(event_id: id)
+                        ),
+                      );
+                    } : null,
+                    child: Text('Register'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
                       ),
+                      padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     ),
                   ),
                 ),
@@ -164,24 +284,3 @@ class _EventCardState extends State<EventCard> {
   }
 }
 
-class FullScreenImage extends StatelessWidget {
-  final String imageUrl;
-
-  const FullScreenImage({Key? key, required this.imageUrl}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Center(
-        child: InteractiveViewer(
-          child: Image.network(imageUrl,fit: BoxFit.fitWidth),
-        ),
-      ),
-    );
-  }
-}

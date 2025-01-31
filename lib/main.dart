@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mit_event/ui/screens/auth/login_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/providers/event_creation_provider.dart';
 import 'core/providers/event_provider.dart';
-import 'core/providers/club/login_provider.dart';
+import 'core/providers/login_provider.dart';
+import 'core/providers/event_registration_provider.dart';
+import 'core/providers/student_event_provider.dart';
 
 
 Future<void> main() async {
@@ -22,7 +25,10 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => LoginProvider()),
-        ChangeNotifierProvider(create: (context) => EventProvider()), // Add EventProvider here
+        ChangeNotifierProvider(create: (context) => EventProvider()),
+        ChangeNotifierProvider(create: (_) => EventRegistrationProvider()),
+        ChangeNotifierProvider(create: (_) => EventCreationProvider()),
+        ChangeNotifierProvider(create: (_) => StudentEventProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

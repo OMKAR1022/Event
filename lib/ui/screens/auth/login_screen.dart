@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/providers/club/login_provider.dart';
+import '../../../core/providers/login_provider.dart';
 
 
 class LoginScreen extends StatefulWidget {
