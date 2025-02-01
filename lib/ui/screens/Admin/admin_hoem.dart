@@ -167,6 +167,7 @@ class AdminHome extends StatelessWidget {
           startTime: event['start_time'] ?? 'N/A',
           endTime: event['end_time'] ?? 'N/A',
           registrations: event['registrations'] ?? 0,
+          maxParticipants: event['max_participants'] ?? 0,
           registrationDeadline: event['registration_deadline'] ?? 'N/A',
         );
       },

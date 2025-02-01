@@ -7,6 +7,7 @@ class EventCard extends StatelessWidget {
   final String startTime;
   final String endTime;
   final int registrations;
+  final int maxParticipants;
   final String registrationDeadline;
 
   const EventCard({
@@ -16,6 +17,7 @@ class EventCard extends StatelessWidget {
     required this.startTime,
     required this.endTime,
     required this.registrations,
+    required this.maxParticipants,
     required this.registrationDeadline,
   }) : super(key: key);
 
@@ -25,22 +27,37 @@ class EventCard extends StatelessWidget {
       final eventDate = DateTime.parse(date);
       final deadline = DateTime.parse(registrationDeadline);
 
-      // Set the time of the current date to midnight for accurate comparison
-      final todayMidnight = DateTime(now.year, now.month, now.day);
+      // Parse start and end times
+      final startTimeParts = startTime.split(':');
+      final endTimeParts = endTime.split(':');
+      final eventStartTime = DateTime(
+          eventDate.year, eventDate.month, eventDate.day,
+          int.parse(startTimeParts[0]), int.parse(startTimeParts[1])
+      );
+      var eventEndTime = DateTime(
+          eventDate.year, eventDate.month, eventDate.day,
+          int.parse(endTimeParts[0]), int.parse(endTimeParts[1])
+      );
+
+      // If end time is before start time, assume it's the next day
+      if (eventEndTime.isBefore(eventStartTime)) {
+        eventEndTime = eventEndTime.add(Duration(days: 1));
+      }
 
       print('Debug: Current date: $now');
-      print('Debug: Today at midnight: $todayMidnight');
       print('Debug: Event date: $eventDate');
+      print('Debug: Event start time: $eventStartTime');
+      print('Debug: Event end time: $eventEndTime');
       print('Debug: Registration deadline: $deadline');
 
-      if (todayMidnight.isAfter(eventDate)) {
-        print('Debug: Event is in the past');
+      if (now.isAfter(eventEndTime)) {
         return 'Completed';
       } else if (now.isBefore(deadline)) {
-        print('Debug: Registration is still open');
+        if (registrations >= maxParticipants) {
+          return 'Full';
+        }
         return 'Active';
       } else {
-        print('Debug: Registration is closed, but event is in the future');
         return 'Registration Closed';
       }
     } catch (e) {
