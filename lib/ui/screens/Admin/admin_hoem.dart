@@ -115,7 +115,7 @@ class AdminHome extends StatelessWidget {
   Widget _buildDashboardCards(EventProvider eventProvider) {
     int fetchedEventsCount = eventProvider.events.length;
     int displayedTotalEvents = fetchedEventsCount > totalEvents ? fetchedEventsCount : totalEvents;
-    int totalRegistrations = eventProvider.events.fold(0, (sum, event) => sum + (event['registrations'] as int));
+    int totalRegistrations = eventProvider.events.fold(0, (sum, event) => sum + (event['registrations'] as int? ?? 0));
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

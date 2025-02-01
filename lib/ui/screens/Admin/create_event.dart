@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
+import '../../../core/providers/event_creation_provider.dart';
 import '../../widgets/progress_header.dart';
 import 'create_event_steps/step_one.dart';
 import 'create_event_steps/step_two.dart';
@@ -139,28 +141,57 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     });
   }
 
-  void _handleCreateEvent() {
+  void _handleCreateEvent() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement event creation logic
-      final eventData = {
-        'title': _titleController.text,
-        'description': _descriptionController.text,
-        'category': _selectedCategory,
-        'date': _dateController.text,
-        'startTime': _startTimeController.text,
-        'endTime': _endTimeController.text,
-        'venue': _venueController.text,
-        'maxParticipants': int.parse(_maxParticipantsController.text),
-        'registrationDeadline': _registrationDeadlineController.text,
-        'enableWaitlist': _enableWaitlist,
-        'requireApproval': _requireApproval,
-        'additionalNotes': _additionalNotesController.text,
-        'bannerImage': _selectedImage?.path,
-        'clubId': widget.clubId,
-      };
+      final eventCreationProvider = Provider.of<EventCreationProvider>(context, listen: false);
 
-      print('Event Data: $eventData');
-      // TODO: Send data to backend
+      try {
+        await eventCreationProvider.createEvent(
+          title: _titleController.text,
+          description: _descriptionController.text,
+          category: _selectedCategory,
+          date: DateTime.parse(_dateController.text),
+          startTime: TimeOfDay(
+            hour: int.parse(_startTimeController.text.split(':')[0]),
+            minute: int.parse(_startTimeController.text.split(':')[1]),
+          ),
+          endTime: TimeOfDay(
+            hour: int.parse(_endTimeController.text.split(':')[0]),
+            minute: int.parse(_endTimeController.text.split(':')[1]),
+          ),
+          venue: _venueController.text,
+          maxParticipants: int.parse(_maxParticipantsController.text),
+          registrationDeadline: DateTime.parse(_registrationDeadlineController.text),
+          enableWaitlist: _enableWaitlist,
+          requireApproval: _requireApproval,
+          additionalNotes: _additionalNotesController.text,
+          clubId: widget.clubId,
+          bannerImage: _selectedImage,
+        );
+
+        if (!mounted) return;
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Event created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate back or to another screen
+        Navigator.of(context).pop();
+      } catch (e) {
+        if (!mounted) return;
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create event: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
