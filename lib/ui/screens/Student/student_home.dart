@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/student_event_provider.dart';
+
 import '../../widgets/event_card/event_card.dart';
+import 'notification_page.dart';
+import '../../../core/providers/notification_provider.dart';
 
 class StudentHome extends StatefulWidget {
   final String? currentStudentId;
@@ -86,9 +89,44 @@ class _StudentHomeState extends State<StudentHome> {
                   color: Colors.blue[800],
                 ),
               ),
-              CircleAvatar(
-                backgroundImage: NetworkImage('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-01-31%20at%204.58.16%E2%80%AFPM-1Cjnvj699EIFjWf2v8Soiow5UoRkLw.png'),
-                radius: 20,
+              Stack(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.notifications, color: Colors.blue[800]),
+                    onPressed: () {
+                      final notificationProvider = Provider.of<NotificationProvider>(
+                          context,
+                          listen: false
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => NotificationPage()),
+                      ).then((_) {
+                        notificationProvider.markAllAsRead();
+                      });
+                    },
+                  ),
+                  Consumer<NotificationProvider>(
+                    builder: (context, provider, child) {
+                      if (!provider.hasUnreadNotifications) return SizedBox.shrink();
+                      return Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: BoxConstraints(
+                            minWidth: 8,
+                            minHeight: 8,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
