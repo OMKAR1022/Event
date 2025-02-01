@@ -54,12 +54,12 @@ class LoginProvider with ChangeNotifier {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => StudentHome()
-                  /*  AdminHome(
+                builder: (context) => //StudentHome()
+                    AdminHome(
                   clubName: clubName,
                   clubId: clubId,
                   totalEvents: totalEvents,
-                ),*/
+                ),
               ),
             );
           } else {
