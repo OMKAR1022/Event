@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:mit_event/ui/widgets/club_event_card.dart';
 import '../../../core/providers/event_provider.dart';
 import '../../widgets/DashboardCard.dart';
+import '../../widgets/custom_bottom_bar.dart';
+import 'calender_screen.dart';
+import 'profile_screen.dart';
 
-
-class AdminHome extends StatelessWidget {
+class AdminHome extends StatefulWidget {
   final String clubName;
   final String clubId;
   final int totalEvents;
@@ -19,59 +21,95 @@ class AdminHome extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final eventProvider = Provider.of<EventProvider>(context);
+  _AdminHomeState createState() => _AdminHomeState();
+}
 
-    // Add this line to fetch events when the screen loads
+class _AdminHomeState extends State<AdminHome> {
+  int _currentIndex = 1; // Update 1
+  final PageController _pageController = PageController(initialPage: 1); // Update 2
+
+  @override
+  void initState() {
+    super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      eventProvider.fetchEvents(clubId);
+      Provider.of<EventProvider>(context, listen: false).fetchEvents(widget.clubId);
     });
+  }
 
+  @override
+  void dispose() {
+    _pageController.dispose(); // Update 4
+    super.dispose();
+  }
+
+  Widget _buildMainContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildAppBar(context),
+        Expanded(
+          child: Consumer<EventProvider>(
+            builder: (context, eventProvider, child) {
+              if (eventProvider.isLoading) {
+                return Center(child: CircularProgressIndicator());
+              }
+              return RefreshIndicator(
+                onRefresh: () => eventProvider.fetchEvents(widget.clubId),
+                child: SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildDashboardCards(eventProvider),
+                        SizedBox(height: 24),
+                        Text(
+                          'Recent Events',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[800],
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        _buildEventList(eventProvider),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffE9EBEA),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
           children: [
-            _buildAppBar(context),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildDashboardCards(eventProvider),
-                      SizedBox(height: 24),
-                      Text(
-                        'Recent Events',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue[800],
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      _buildEventList(eventProvider),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            _buildMainContent(),
+            CalendarScreen(),
+            ProfileScreen(),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => CreateEventScreen(clubId: clubId)
-              )
-          );
+      bottomNavigationBar: CustomBottomBar( // Update 3
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          _pageController.jumpToPage(index);
         },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
       ),
     );
   }
@@ -87,25 +125,43 @@ class AdminHome extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Welcome,',
+                'Club Dashboard',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                widget.clubName,
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[600],
                 ),
               ),
-              Text(
-                clubName,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[800],
-                ),
-              ),
             ],
           ),
-          CircleAvatar(
-            backgroundImage: NetworkImage('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-01-31%20at%204.58.16%E2%80%AFPM-1Cjnvj699EIFjWf2v8Soiow5UoRkLw.png'),
-            radius: 24,
+          ElevatedButton.icon(
+            onPressed: () async {
+              await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CreateEventScreen(clubId: widget.clubId)
+                  )
+              );
+              Provider.of<EventProvider>(context, listen: false).fetchEvents(widget.clubId);
+            },
+            icon: Icon(Icons.add),
+            label: Text('New Event'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[600],
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
           ),
         ],
       ),
@@ -114,7 +170,7 @@ class AdminHome extends StatelessWidget {
 
   Widget _buildDashboardCards(EventProvider eventProvider) {
     int fetchedEventsCount = eventProvider.events.length;
-    int displayedTotalEvents = fetchedEventsCount > totalEvents ? fetchedEventsCount : totalEvents;
+    int displayedTotalEvents = fetchedEventsCount > widget.totalEvents ? fetchedEventsCount : widget.totalEvents;
     int totalRegistrations = eventProvider.events.fold(0, (sum, event) => sum + (event['registrations'] as int? ?? 0));
 
     return Row(
@@ -142,10 +198,6 @@ class AdminHome extends StatelessWidget {
   }
 
   Widget _buildEventList(EventProvider eventProvider) {
-    if (eventProvider.isLoading) {
-      return Center(child: CircularProgressIndicator());
-    }
-
     if (eventProvider.events.isEmpty) {
       return Center(
         child: Text(

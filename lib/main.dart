@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mit_event/ui/screens/auth/login_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/providers/club_profile_provider.dart';
 import 'core/providers/event_creation_provider.dart';
 import 'core/providers/event_provider.dart';
 import 'core/providers/login_provider.dart';
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => EventRegistrationProvider()),
         ChangeNotifierProvider(create: (_) => EventCreationProvider()),
         ChangeNotifierProvider(create: (_) => StudentEventProvider()),
+        ChangeNotifierProvider(create: (_) => ClubProfileProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

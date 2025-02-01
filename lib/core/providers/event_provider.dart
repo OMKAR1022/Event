@@ -6,6 +6,7 @@ class EventProvider with ChangeNotifier {
   bool _isLoading = false;
   int _totalEvents = 0;
   String? _currentClubId;
+  RealtimeChannel? _eventChannel;
 
   List<Map<String, dynamic>> get events => _events;
   bool get isLoading => _isLoading;
@@ -16,13 +17,7 @@ class EventProvider with ChangeNotifier {
   }
 
   Future<void> fetchEvents(String clubId) async {
-    if (_currentClubId == clubId && _events.isNotEmpty) {
-      return; // Don't fetch if we already have events for this club
-    }
-
     _isLoading = true;
-    _events.clear();
-    _currentClubId = clubId;
     notifyListeners();
 
     try {
@@ -43,6 +38,7 @@ class EventProvider with ChangeNotifier {
       }).toList());
 
       _totalEvents = _events.length;
+      _currentClubId = clubId;
 
       print('Fetched Events: $_events');
     } catch (e) {
@@ -72,27 +68,54 @@ class EventProvider with ChangeNotifier {
   void _initializeRealTimeUpdates() {
     final supabase = Supabase.instance.client;
 
-    supabase
-        .from('events')
-        .stream(primaryKey: ['id'])
-        .listen((List<Map<String, dynamic>> data) {
-      if (data.isNotEmpty && _currentClubId != null) {
-        _updateEventsFromStream(data);
-      }
-    });
+    _eventChannel = supabase
+        .channel('public:event')
+        .onPostgresChanges(
+      event: PostgresChangeEvent.all,
+      schema: 'public',
+      table: 'event',
+      callback: (payload) {
+        print('Received events update: $payload');
+        if (_currentClubId != null) {
+          fetchEvents(_currentClubId!);
+        }
+      },
+    )
+        .onPostgresChanges(
+      event: PostgresChangeEvent.all,
+      schema: 'public',
+      table: 'event_registrations',
+      callback: (payload) {
+        print('Received registrations update: $payload');
+        _updateEventRegistrations(payload);
+      },
+    )
+        .subscribe();
   }
 
-  void _updateEventsFromStream(List<Map<String, dynamic>> updatedEvents) {
-    for (var updatedEvent in updatedEvents) {
-      int index = _events.indexWhere((event) => event['id'] == updatedEvent['id']);
-      if (index != -1) {
-        _events[index] = {..._events[index], ...updatedEvent};
-      } else {
-        _events.add(updatedEvent);
-      }
+  void _updateEventRegistrations(PostgresChangePayload payload) async {
+    String? eventId;
+    if (payload.newRecord != null) {
+      eventId = payload.newRecord!['event_id']?.toString();
+    } else if (payload.oldRecord != null) {
+      eventId = payload.oldRecord!['event_id']?.toString();
     }
-    _totalEvents = _events.length;
-    notifyListeners();
+
+    if (eventId == null) return;
+
+    final newCount = await _fetchRegistrationCount(eventId);
+
+    final eventIndex = _events.indexWhere((event) => event['id'].toString() == eventId);
+    if (eventIndex != -1) {
+      _events[eventIndex]['registrations'] = newCount;
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _eventChannel?.unsubscribe();
+    super.dispose();
   }
 }
 

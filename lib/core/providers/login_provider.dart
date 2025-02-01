@@ -8,8 +8,11 @@ import 'package:provider/provider.dart';
 
 
 class LoginProvider with ChangeNotifier {
+  final _supabase = Supabase.instance.client;
   String? _clubId;
+  String? _studentId;
   String? get clubId => _clubId;
+  String? get studentId => _studentId;
 
   Future<void> login(String username, String password, BuildContext context) async {
     try {
@@ -73,6 +76,32 @@ class LoginProvider with ChangeNotifier {
       }
     } catch (e) {
       _showErrorSnackbar(context, 'An unexpected error occurred: $e');
+    }
+  }
+
+  Future<void> loginStudent(String enrollNo, String password, BuildContext context) async {
+    final response = await _supabase
+        .from('student_user')
+        .select('id, enroll_no, password')
+        .eq('enroll_no', enrollNo)
+        .maybeSingle();
+
+    if (response != null) {
+      if (password == response['password']) {
+        _studentId = response['id']?.toString();
+        notifyListeners();
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StudentHome(),
+          ),
+        );
+      } else {
+        _showErrorSnackbar(context, 'Login failed. Please check your credentials.');
+      }
+    } else {
+      _showErrorSnackbar(context, 'No student found with that enrollment number.');
     }
   }
 
