@@ -9,6 +9,7 @@ class CustomTextField extends StatelessWidget {
   final VoidCallback? onTap;
   final Widget? suffixIcon;
   final int maxLines;
+  final bool obscureText;
 
   const CustomTextField({
     Key? key,
@@ -20,6 +21,7 @@ class CustomTextField extends StatelessWidget {
     this.onTap,
     this.suffixIcon,
     this.maxLines = 1,
+    this.obscureText = false,
   }) : super(key: key);
 
   @override
@@ -41,6 +43,7 @@ class CustomTextField extends StatelessWidget {
           maxLines: maxLines,
           readOnly: readOnly,
           onTap: onTap,
+          obscureText: obscureText,
           decoration: InputDecoration(
             hintText: hintText,
             filled: true,

@@ -57,20 +57,18 @@ class EventCreationProvider with ChangeNotifier {
         'additional_notes': additionalNotes,
         'club_id': clubId, // Keep clubId as a string since it's a UUID
       };
+
       print('Event data to be inserted: $eventData');
-      // Simple insert without select
-      final response = await _supabase
+
+      // Insert the event data into the 'event' table
+      await _supabase
           .from('event')
           .insert(eventData);
-
-      if (response.error != null) {
-        throw response.error!.message;
-      }
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      _error = e.toString();
+      _error = 'Failed to create event: $e';
       _isLoading = false;
       notifyListeners();
       rethrow;
