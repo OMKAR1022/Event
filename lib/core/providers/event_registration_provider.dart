@@ -12,10 +12,7 @@ class EventRegistrationProvider with ChangeNotifier {
 
   Future<void> registerForEvent({
     required int eventId,
-    required String studentName,
-    required String email,
-    required String phoneNo,
-    required String enrollNo,
+    required String studentId,
   }) async {
     print('Starting registration process for event $eventId');
     try {
@@ -31,7 +28,7 @@ class EventRegistrationProvider with ChangeNotifier {
           .from('event_registrations')
           .select()
           .eq('event_id', eventId)
-          .eq('email', email);
+          .eq('student_id', studentId);
 
       if (existingRegistrations.isNotEmpty) {
         _error = 'You have already registered for this event';
@@ -41,33 +38,41 @@ class EventRegistrationProvider with ChangeNotifier {
       }
 
       // If not registered, proceed with registration
-      final response = await supabase
-          .from('event_registrations')
-          .insert({
+      await supabase.from('event_registrations').insert({
         'event_id': eventId,
-        'student_name': studentName,
-        'email': email,
-        'phone': phoneNo,
-        'enroll_no': enrollNo,
+        'student_id': studentId,
       });
 
-      // Log the response for debugging
-      print('Response: $response');
-
-      // If the response is not null and no exception is thrown, registration is successful
       _isSuccess = true;
       _isLoading = false;
       notifyListeners();
       print('Registration process completed. Success: $_isSuccess, Error: $_error');
 
     } catch (error) {
-      _error = 'Failed to register: $error';
+      _error = error.toString();
       _isLoading = false;
       _isSuccess = false;
       notifyListeners();
       print('Error occurred during registration: $_error');
     }
   }
+
+  Future<bool> isStudentRegistered({required int eventId, required String studentId}) async {
+    try {
+      final supabase = Supabase.instance.client;
+      final existingRegistrations = await supabase
+          .from('event_registrations')
+          .select()
+          .eq('event_id', eventId)
+          .eq('student_id', studentId);
+
+      return existingRegistrations.isNotEmpty;
+    } catch (error) {
+      print('Error checking student registration: $error');
+      return false;
+    }
+  }
+
   void resetState() {
     _isLoading = false;
     _error = null;
@@ -75,4 +80,3 @@ class EventRegistrationProvider with ChangeNotifier {
     notifyListeners();
   }
 }
-

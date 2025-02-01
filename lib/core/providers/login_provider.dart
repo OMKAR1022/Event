@@ -58,7 +58,7 @@ class LoginProvider with ChangeNotifier {
               context,
               MaterialPageRoute(
                 builder: (context) => //StudentHome()
-                    AdminHome(
+                AdminHome(
                   clubName: clubName,
                   clubId: clubId,
                   totalEvents: totalEvents,
@@ -94,7 +94,7 @@ class LoginProvider with ChangeNotifier {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => StudentHome(),
+            builder: (context) => StudentHome(currentStudentId: _studentId),
           ),
         );
       } else {
