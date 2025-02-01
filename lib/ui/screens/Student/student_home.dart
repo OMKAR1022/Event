@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/student_event_provider.dart';
-import '../../widgets/event_card.dart';
+import '../../widgets/event_card/event_card.dart';
 
 class StudentHome extends StatefulWidget {
+  final String? currentStudentId;
+
+  const StudentHome({Key? key, required this.currentStudentId}) : super(key: key);
   @override
   _StudentHomeState createState() => _StudentHomeState();
 }
@@ -181,6 +184,7 @@ class _StudentHomeState extends State<StudentHome> {
           registrations: event['registrations'] ?? 0,
           onImageTap: () => _showImagePreview(event['image_url'] ?? ''),
           clubName: event['clubs']['name'] ?? 'N/A',
+          currentStudentId: widget.currentStudentId,
         );
       },
     );
