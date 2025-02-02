@@ -9,6 +9,8 @@ import 'core/providers/event_provider.dart';
 import 'core/providers/login_provider.dart';
 import 'core/providers/event_registration_provider.dart';
 import 'core/providers/notification_provider.dart';
+import 'core/providers/registered_events_provider.dart';
+import 'core/providers/student_auth_provider.dart';
 import 'core/providers/student_event_provider.dart';
 
 Future<void> main() async {
@@ -34,6 +36,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => StudentEventProvider()),
         ChangeNotifierProvider(create: (_) => ClubProfileProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => StudentAuthProvider()),
+        ChangeNotifierProvider(create: (_) => RegisteredEventsProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

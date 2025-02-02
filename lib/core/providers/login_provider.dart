@@ -11,8 +11,10 @@ class LoginProvider with ChangeNotifier {
   final _supabase = Supabase.instance.client;
   String? _clubId;
   String? _studentId;
+  String? _studentName;
   String? get clubId => _clubId;
   String? get studentId => _studentId;
+  String? get studentName => _studentName;
 
   Future<void> login(String username, String password, BuildContext context) async {
     try {
@@ -82,19 +84,26 @@ class LoginProvider with ChangeNotifier {
   Future<void> loginStudent(String enrollNo, String password, BuildContext context) async {
     final response = await _supabase
         .from('student_user')
-        .select('id, enroll_no, password')
+        .select('id, enroll_no, password, name, email, phone_no')
         .eq('enroll_no', enrollNo)
         .maybeSingle();
 
     if (response != null) {
       if (password == response['password']) {
         _studentId = response['id']?.toString();
+        _studentName = response['name'];
         notifyListeners();
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => StudentHome(currentStudentId: _studentId),
+            builder: (context) => StudentHome(
+              currentStudentId: _studentId,
+              studentName: _studentName,
+              enrollmentNo: response['enroll_no'],
+              email: response['email'],
+              phoneNo: response['phone_no'],
+            ),
           ),
         );
       } else {

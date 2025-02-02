@@ -5,6 +5,7 @@ import 'package:mit_event/ui/widgets/club_event_card.dart';
 import '../../../core/providers/event_provider.dart';
 import '../../widgets/DashboardCard.dart';
 import '../../widgets/custom_bottom_bar.dart';
+import '../../widgets/qr_code_model.dart';
 import 'calender_screen.dart';
 import 'profile_screen.dart';
 
@@ -40,6 +41,15 @@ class _AdminHomeState extends State<AdminHome> {
   void dispose() {
     _pageController.dispose(); // Update 4
     super.dispose();
+  }
+
+  void _showQRCodeModal(BuildContext context, String eventId, String eventTitle) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return QRCodeModal(eventId: eventId, eventTitle: eventTitle);
+      },
+    );
   }
 
   Widget _buildMainContent() {
@@ -221,6 +231,7 @@ class _AdminHomeState extends State<AdminHome> {
           registrations: event['registrations'] ?? 0,
           maxParticipants: event['max_participants'] ?? 0,
           registrationDeadline: event['registration_deadline'] ?? 'N/A',
+          onGenerateQR: (title) => _showQRCodeModal(context, event['id'].toString(), title),
         );
       },
     );

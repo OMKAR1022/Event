@@ -9,6 +9,7 @@ class EventCard extends StatelessWidget {
   final int registrations;
   final int maxParticipants;
   final String registrationDeadline;
+  final Function(String) onGenerateQR;
 
   const EventCard({
     Key? key,
@@ -19,6 +20,7 @@ class EventCard extends StatelessWidget {
     required this.registrations,
     required this.maxParticipants,
     required this.registrationDeadline,
+    required this.onGenerateQR,
   }) : super(key: key);
 
   String _getEventStatus() {
@@ -182,7 +184,7 @@ class EventCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '100', // TODO: Add max participants to the card props
+                      '$maxParticipants',
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 14,
@@ -194,10 +196,27 @@ class EventCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: registrations / 100, // TODO: Use actual max participants
+                    value: registrations / maxParticipants,
                     backgroundColor: Colors.blue.withOpacity(0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
                     minHeight: 6,
+                  ),
+                ),
+                SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => onGenerateQR(title),
+                    icon: Icon(Icons.qr_code),
+                    label: Text('Generate QR'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[700],
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
                 ),
               ],

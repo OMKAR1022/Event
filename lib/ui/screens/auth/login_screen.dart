@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/login_provider.dart';
+import 'student_create_account.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -11,7 +12,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
-  bool isClubMember = true; // Default to club member
+  bool isClubMember = true;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +88,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
-                        // TODO: Navigate to forgot password screen
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Forgot password functionality coming soon')),
                         );
@@ -109,19 +109,45 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (isClubMember)
                     _buildClubRegistration()
                   else
-                    Text(
-                      "Need an account? Register",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.blue[700],
-                      ),
-                    ),
+                    _buildStudentRegistration(),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStudentRegistration() {
+    return Column(
+      children: [
+        Text(
+          "Don't have an account?",
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        SizedBox(height: 8),
+        TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => StudentCreateAccountScreen()),
+            );
+          },
+          child: Text(
+            "Create Student Account",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.blue[600],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -310,7 +336,6 @@ class _LoginScreenState extends State<LoginScreen> {
             'Login',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
