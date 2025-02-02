@@ -5,11 +5,24 @@ import '../../../core/providers/student_event_provider.dart';
 import '../../widgets/event_card/event_card.dart';
 import 'notification_page.dart';
 import '../../../core/providers/notification_provider.dart';
+import '../../widgets/student_drawer.dart';
 
 class StudentHome extends StatefulWidget {
   final String? currentStudentId;
+  final String? studentName;
+  final String? enrollmentNo;
+  final String? email;
+  final String? phoneNo;
 
-  const StudentHome({Key? key, required this.currentStudentId}) : super(key: key);
+  const StudentHome({
+    Key? key,
+    required this.currentStudentId,
+    required this.studentName,
+    this.enrollmentNo,
+    this.email,
+    this.phoneNo,
+  }) : super(key: key);
+
   @override
   _StudentHomeState createState() => _StudentHomeState();
 }
@@ -43,6 +56,12 @@ class _StudentHomeState extends State<StudentHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
+      drawer: StudentDrawer(
+        studentName: widget.studentName,
+        enrollmentNo: widget.enrollmentNo,
+        email: widget.email,
+        phoneNo: widget.phoneNo,
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,13 +100,26 @@ class _StudentHomeState extends State<StudentHome> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Hello, Student!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[800],
-                ),
+              Row(
+                children: [
+                  Builder(
+                    builder: (context) => IconButton(
+                      icon: Icon(Icons.menu, color: Colors.blue[800]),
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Hello, ${widget.studentName ?? 'Student'}!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue[800],
+                    ),
+                  ),
+                ],
               ),
               Stack(
                 children: [

@@ -4,14 +4,14 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-class Notification {
+class EventNotification {
   final String id;
   final String title;
   final String body;
   final DateTime timestamp;
   bool isRead;
 
-  Notification({
+  EventNotification({
     required this.id,
     required this.title,
     required this.body,
@@ -21,12 +21,12 @@ class Notification {
 }
 
 class NotificationProvider with ChangeNotifier {
-  final List<Notification> _notifications = [];
+  final List<EventNotification> _notifications = [];
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   DateTime _lastCheckTime = DateTime.now();
   bool _isInitialized = false;
 
-  List<Notification> get notifications => _notifications;
+  List<EventNotification> get notifications => _notifications;
   bool get hasUnreadNotifications => _notifications.any((notification) => !notification.isRead);
 
   NotificationProvider() {
@@ -141,7 +141,7 @@ class NotificationProvider with ChangeNotifier {
 
         // Only process events that were created after our last check
         if (createdAt.isAfter(_lastCheckTime)) {
-          final notification = Notification(
+          final notification = EventNotification(
             id: '${event['id']}_${createdAt.millisecondsSinceEpoch}',
             title: 'New Event Added',
             body: 'A new event "${event['title']}" has been added.',
@@ -167,7 +167,7 @@ class NotificationProvider with ChangeNotifier {
     }
   }
 
-  Future<void> _showNotification(Notification notification) async {
+  Future<void> _showNotification(EventNotification notification) async {
     try {
       const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'event_notifications',
@@ -227,7 +227,7 @@ class NotificationProvider with ChangeNotifier {
     }
   }
 
-  String _notificationToJson(Notification notification) {
+  String _notificationToJson(EventNotification notification) {
     return jsonEncode({
       "id": notification.id,
       "title": notification.title,
@@ -237,9 +237,9 @@ class NotificationProvider with ChangeNotifier {
     });
   }
 
-  Notification _notificationFromJson(String json) {
+  EventNotification _notificationFromJson(String json) {
     final map = jsonDecode(json);
-    return Notification(
+    return EventNotification(
       id: map['id'],
       title: map['title'],
       body: map['body'],
