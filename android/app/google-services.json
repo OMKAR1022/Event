@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1023704478302",
+    "project_id": "mitevent-28a5a",
+    "storage_bucket": "mitevent-28a5a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1023704478302:android:20d3c6d1d53f7e4fe77acf",
+        "android_client_info": {
+          "package_name": "com.example.mit_event"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZPy9C4XIhZNw83jRxQkcpMMS87DccWFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
