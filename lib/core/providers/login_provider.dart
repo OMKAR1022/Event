@@ -119,5 +119,16 @@ class LoginProvider with ChangeNotifier {
       SnackBar(content: Text(message)),
     );
   }
+
+  Future<void> logout(BuildContext context) async {
+    // Clear the stored user data
+    _clubId = null;
+    _studentId = null;
+    _studentName = null;
+    notifyListeners();
+
+    // Navigate to the login screen
+    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+  }
 }
 

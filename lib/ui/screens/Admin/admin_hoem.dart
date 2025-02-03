@@ -9,6 +9,9 @@ import '../../widgets/qr_code_model.dart';
 import 'calender_screen.dart';
 import 'profile_screen.dart';
 
+import 'package:intl/intl.dart';
+import 'event_analytics_page.dart';
+
 class AdminHome extends StatefulWidget {
   final String clubName;
   final String clubId;
@@ -28,6 +31,7 @@ class AdminHome extends StatefulWidget {
 class _AdminHomeState extends State<AdminHome> {
   int _currentIndex = 1; // Update 1
   final PageController _pageController = PageController(initialPage: 1); // Update 2
+  String _selectedFilter = 'All';
 
   @override
   void initState() {
@@ -52,6 +56,20 @@ class _AdminHomeState extends State<AdminHome> {
     );
   }
 
+  String _getEventStatus(Map<String, dynamic> event) {
+    final now = DateTime.now();
+    final eventDate = DateTime.parse(event['date']);
+    final registrationDeadline = DateTime.parse(event['registration_deadline']);
+
+    if (now.isAfter(eventDate)) {
+      return 'Completed';
+    } else if (now.isAfter(registrationDeadline)) {
+      return 'Registration Closed';
+    } else {
+      return 'Active';
+    }
+  }
+
   Widget _buildMainContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,6 +92,8 @@ class _AdminHomeState extends State<AdminHome> {
                       children: [
                         _buildDashboardCards(eventProvider),
                         SizedBox(height: 24),
+                        _buildFilterChips(),
+                        SizedBox(height: 16),
                         Text(
                           'Recent Events',
                           style: TextStyle(
@@ -217,12 +237,27 @@ class _AdminHomeState extends State<AdminHome> {
       );
     }
 
+    final filteredEvents = eventProvider.events.where((event) {
+      final status = _getEventStatus(event);
+      return _selectedFilter == 'All' || status == _selectedFilter;
+    }).toList();
+
+    if (filteredEvents.isEmpty) {
+      return Center(
+        child: Text(
+          'No events match the selected filter.',
+          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+        ),
+      );
+    }
+
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      itemCount: eventProvider.events.length,
+      itemCount: filteredEvents.length,
       itemBuilder: (context, index) {
-        final event = eventProvider.events[index];
+        final event = filteredEvents[index];
+        final status = _getEventStatus(event);
         return EventCard(
           title: event['title'] ?? 'Untitled Event',
           date: event['date'] ?? 'No Date Available',
@@ -232,8 +267,61 @@ class _AdminHomeState extends State<AdminHome> {
           maxParticipants: event['max_participants'] ?? 0,
           registrationDeadline: event['registration_deadline'] ?? 'N/A',
           onGenerateQR: (title) => _showQRCodeModal(context, event['id'].toString(), title),
+          status: status,
+          onAnalytics: status == 'Completed' ? () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EventAnalyticsPage(
+                  eventId: event['id'].toString(),
+                  eventTitle: event['title'],
+                ),
+              ),
+            );
+          } : null,
         );
       },
+    );
+  }
+
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          FilterChip(
+            label: Text('All'),
+            selected: _selectedFilter == 'All',
+            onSelected: (selected) {
+              setState(() => _selectedFilter = 'All');
+            },
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Active'),
+            selected: _selectedFilter == 'Active',
+            onSelected: (selected) {
+              setState(() => _selectedFilter = 'Active');
+            },
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Completed'),
+            selected: _selectedFilter == 'Completed',
+            onSelected: (selected) {
+              setState(() => _selectedFilter = 'Completed');
+            },
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Registration Closed'),
+            selected: _selectedFilter == 'Registration Closed',
+            onSelected: (selected) {
+              setState(() => _selectedFilter = 'Registration Closed');
+            },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/providers/club_profile_provider.dart';
 
 import '../../../core/providers/login_provider.dart';
+import '../../../utils/app_colors.dart';
 
 
 class ProfileScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Consumer<ClubProfileProvider>(
         builder: (context, profileProvider, child) {
           if (profileProvider.isLoading) {
@@ -73,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.settings),
+          icon: Icon(Icons.settings,color: Colors.white,size: 30,),
           onPressed: () {
             Navigator.push(
               context,
@@ -88,6 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildUserInfo(ClubProfileProvider profileProvider) {
     final currentUser = profileProvider.currentUser;
     return Card(
+      color: AppColors.card,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
@@ -116,6 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildClubInfo(ClubProfileProvider profileProvider) {
     return Card(
+      color: AppColors.card,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
@@ -144,6 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildMembersList(ClubProfileProvider profileProvider) {
     return Card(
+      color: AppColors.card,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(

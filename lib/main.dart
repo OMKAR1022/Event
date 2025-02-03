@@ -1,9 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:mit_event/ui/screens/auth/login_screen.dart';
+import 'package:mit_event/utils/app_routes.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/providers/club_profile_provider.dart';
+import 'core/providers/event_analytics_provider.dart';
 import 'core/providers/event_creation_provider.dart';
 import 'core/providers/event_provider.dart';
 import 'core/providers/login_provider.dart';
@@ -38,14 +39,17 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => StudentAuthProvider()),
         ChangeNotifierProvider(create: (_) => RegisteredEventsProvider()),
+        ChangeNotifierProvider(create: (_) => EventAnalyticsProvider('')),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Login Demo',
+        title: 'MIT Event Management',
         theme: ThemeData(
           primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: LoginScreen(), // Entry screen
+        initialRoute: AppRoutes.login,
+        routes: AppRoutes.getRoutes(),
       ),
     );
   }

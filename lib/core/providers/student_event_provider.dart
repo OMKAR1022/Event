@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:async';
 
 class StudentEventProvider with ChangeNotifier {
   List<Map<String, dynamic>> _events = [];
@@ -8,12 +9,16 @@ class StudentEventProvider with ChangeNotifier {
   RealtimeChannel? _eventSubscription;
   RealtimeChannel? _registrationSubscription;
 
+  final _eventsStreamController = StreamController<List<Map<String, dynamic>>>.broadcast();
+
   List<Map<String, dynamic>> get events => _events;
   bool get isLoading => _isLoading;
   int get totalEvents => _totalEvents;
+  Stream<List<Map<String, dynamic>>> get eventsStream => _eventsStreamController.stream;
 
   StudentEventProvider() {
     _initializeRealTimeUpdates();
+    fetchAllEvents();
   }
 
   void _initializeRealTimeUpdates() {
@@ -73,6 +78,7 @@ class StudentEventProvider with ChangeNotifier {
       }).toList());
 
       _totalEvents = _events.length;
+      _eventsStreamController.add(_events);
       print('Fetched Events for Students: $_events');
     } catch (e) {
       debugPrint('Error fetching events for students: $e');
@@ -113,6 +119,7 @@ class StudentEventProvider with ChangeNotifier {
     final eventIndex = _events.indexWhere((event) => event['id'].toString() == eventId);
     if (eventIndex != -1) {
       _events[eventIndex]['registrations'] = newCount;
+      _eventsStreamController.add(_events);
       notifyListeners();
     }
   }
@@ -121,6 +128,7 @@ class StudentEventProvider with ChangeNotifier {
   void dispose() {
     _eventSubscription?.unsubscribe();
     _registrationSubscription?.unsubscribe();
+    _eventsStreamController.close();
     super.dispose();
   }
 }

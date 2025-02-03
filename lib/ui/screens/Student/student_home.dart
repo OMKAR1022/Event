@@ -29,8 +29,10 @@ class StudentHome extends StatefulWidget {
 
 class _StudentHomeState extends State<StudentHome> {
   String? _previewImageUrl;
-  final List<String> _categories = ["Academic", "Cultural", "Sports", "Technical", "Workshop", "Other"];
+  final List<String> _categories = ["All", "Academic", "Cultural", "Sports", "Technical", "Workshop", "Other"];
   int _selectedIndex = 0;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -38,6 +40,12 @@ class _StudentHomeState extends State<StudentHome> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<StudentEventProvider>(context, listen: false).fetchAllEvents();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _showImagePreview(String imageUrl) {
@@ -52,6 +60,15 @@ class _StudentHomeState extends State<StudentHome> {
     });
   }
 
+  List<Map<String, dynamic>> _filterEvents(List<Map<String, dynamic>> events, String category) {
+    return events.where((event) {
+      final matchesSearch = event['title'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          event['clubs']['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
+      final matchesCategory = category == "All" || event['category'] == category;
+      return matchesSearch && matchesCategory;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,28 +80,66 @@ class _StudentHomeState extends State<StudentHome> {
         phoneNo: widget.phoneNo,
       ),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAppBar(),
-            _buildCategoryTabs(),
-            Expanded(
-              child: Stack(
-                children: [
-                  Consumer<StudentEventProvider>(
-                    builder: (context, studentEventProvider, child) {
-                      if (studentEventProvider.isLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      return _buildEventList(studentEventProvider.events, _categories[_selectedIndex]);
-                    },
-                  ),
-                  if (_previewImageUrl != null)
-                    _buildImagePreview(),
-                ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await Provider.of<StudentEventProvider>(context, listen: false).fetchAllEvents();
+          },
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    _buildAppBar(),
+                    _buildCategoryTabs(),
+                  ],
+                ),
               ),
-            ),
-          ],
+              StreamBuilder<List<Map<String, dynamic>>>(
+                stream: Provider.of<StudentEventProvider>(context, listen: false).eventsStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (snapshot.hasError) {
+                    return SliverFillRemaining(
+                      child: Center(child: Text('Error: ${snapshot.error}')),
+                    );
+                  }
+                  final events = snapshot.data ?? [];
+                  final filteredEvents = _filterEvents(events, _categories[_selectedIndex]);
+                  return SliverPadding(
+                    padding: EdgeInsets.all(16.0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                          final event = filteredEvents[index];
+                          return EventCard(
+                            title: event['title'] ?? 'N/A',
+                            date: event['date'] ?? 'N/A',
+                            startTime: event['start_time'] ?? 'N/A',
+                            endTime: event['end_time'] ?? 'N/A',
+                            venue: event['venue'] ?? 'N/A',
+                            category: event['category'] ?? 'N/A',
+                            maxParticipants: event['max_participants'] ?? 0,
+                            registrationDeadline: event['registration_deadline'] ?? 'N/A',
+                            imageUrl: event['image_url'] ?? '',
+                            id: event['id'],
+                            registrations: event['registrations'] ?? 0,
+                            onImageTap: () => _showImagePreview(event['image_url'] ?? ''),
+                            clubName: event['clubs']['name'] ?? 'N/A',
+                            currentStudentId: widget.currentStudentId,
+                          );
+                        },
+                        childCount: filteredEvents.length,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -164,9 +219,21 @@ class _StudentHomeState extends State<StudentHome> {
           ),
           SizedBox(height: 16),
           TextField(
+            controller: _searchController,
             decoration: InputDecoration(
-              hintText: "Search events...",
+              hintText: "Search events by title or club...",
               prefixIcon: Icon(Icons.search, color: Colors.grey),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                icon: Icon(Icons.clear),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _searchQuery = '';
+                  });
+                },
+              )
+                  : null,
               filled: true,
               fillColor: Colors.grey[200],
               border: OutlineInputBorder(
@@ -175,6 +242,11 @@ class _StudentHomeState extends State<StudentHome> {
               ),
               contentPadding: EdgeInsets.symmetric(vertical: 0),
             ),
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
           ),
         ],
       ),
@@ -223,40 +295,42 @@ class _StudentHomeState extends State<StudentHome> {
     );
   }
 
-  Widget _buildEventList(List<Map<String, dynamic>> events, String category) {
-    final filteredEvents = events.where((event) => event['category'] == category).toList();
-
-    if (filteredEvents.isEmpty) {
-      return Center(
-        child: Text(
-          'No events available.',
-          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+  Widget _buildEventList(List<Map<String, dynamic>> events) {
+    if (events.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Text(
+            'No events found.\nTry a different search or category.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+          ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: filteredEvents.length,
-      itemBuilder: (context, index) {
-        final event = filteredEvents[index];
-        return EventCard(
-          title: event['title'] ?? 'N/A',
-          date: event['date'] ?? 'N/A',
-          startTime: event['start_time'] ?? 'N/A',
-          endTime: event['end_time'] ?? 'N/A',
-          venue: event['venue'] ?? 'N/A',
-          category: event['category'] ?? 'N/A',
-          maxParticipants: event['max_participants'] ?? 0,
-          registrationDeadline: event['registration_deadline'] ?? 'N/A',
-          imageUrl: event['image_url'] ?? '',
-          id: event['id'],
-          registrations: event['registrations'] ?? 0,
-          onImageTap: () => _showImagePreview(event['image_url'] ?? ''),
-          clubName: event['clubs']['name'] ?? 'N/A',
-          currentStudentId: widget.currentStudentId,
-        );
-      },
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+            (context, index) {
+          final event = events[index];
+          return EventCard(
+            title: event['title'] ?? 'N/A',
+            date: event['date'] ?? 'N/A',
+            startTime: event['start_time'] ?? 'N/A',
+            endTime: event['end_time'] ?? 'N/A',
+            venue: event['venue'] ?? 'N/A',
+            category: event['category'] ?? 'N/A',
+            maxParticipants: event['max_participants'] ?? 0,
+            registrationDeadline: event['registration_deadline'] ?? 'N/A',
+            imageUrl: event['image_url'] ?? '',
+            id: event['id'],
+            registrations: event['registrations'] ?? 0,
+            onImageTap: () => _showImagePreview(event['image_url'] ?? ''),
+            clubName: event['clubs']['name'] ?? 'N/A',
+            currentStudentId: widget.currentStudentId,
+          );
+        },
+        childCount: events.length,
+      ),
     );
   }
 

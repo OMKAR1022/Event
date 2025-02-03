@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/event_registration_provider.dart';
 
+import '../../../utils/app_colors.dart';
 import 'event_card_header.dart';
 import 'event_card_details.dart';
 import 'event_card_registration.dart';
@@ -165,6 +166,7 @@ class _EventCardState extends State<EventCard> {
     final statusColor = _getStatusColor(status);
 
     return Card(
+      color: AppColors.card,
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),

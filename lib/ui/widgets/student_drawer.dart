@@ -21,123 +21,115 @@ class StudentDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.white,
-      child: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                _buildMenuItem(
-                  icon: Icons.person_outline,
-                  title: 'My Profile',
-                  onTap: () {
-                    // TODO: Navigate to profile page
-                    Navigator.pop(context);
-                  },
-                ),
-                _buildMenuItem(
-                  icon: Icons.event_outlined,
-                  title: 'My Events',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MyEventsPage(
-                          studentId: Provider.of<LoginProvider>(context, listen: false).studentId ?? '',
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                _buildMenuItem(
-                  icon: Icons.lock_outline,
-                  title: 'Change Password',
-                  onTap: () {
-                    // TODO: Navigate to change password page
-                    Navigator.pop(context);
-                  },
-                ),
-                _buildMenuItem(
-                  icon: Icons.settings_outlined,
-                  title: 'Settings',
-                  onTap: () {
-                    // TODO: Navigate to settings page
-                    Navigator.pop(context);
-                  },
-                ),
-                _buildMenuItem(
-                  icon: Icons.help_outline,
-                  title: 'Help & Support',
-                  onTap: () {
-                    // TODO: Navigate to help page
-                    Navigator.pop(context);
-                  },
-                ),
-                Divider(color: Colors.grey[300]),
-                _buildMenuItem(
-                  icon: Icons.logout,
-                  title: 'Logout',
-                  onTap: () {
-                    // TODO: Implement logout
-                    Navigator.pop(context);
-                  },
-                  color: Colors.red[400],
-                ),
-              ],
-            ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.blue[300]!, Colors.blue[900]!],
           ),
-          _buildFooter(),
-        ],
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    _buildHeader(),
+                    SizedBox(height: 20),
+                    _buildMenuItem(
+                      icon: Icons.person_outline,
+                      title: 'My Profile',
+                      onTap: () {
+                        // TODO: Navigate to profile page
+                        Navigator.pop(context);
+                      },
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.event_outlined,
+                      title: 'My Events',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MyEventsPage(
+                              studentId: Provider.of<LoginProvider>(context, listen: false).studentId ?? '',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.lock_outline,
+                      title: 'Change Password',
+                      onTap: () {
+                        // TODO: Navigate to change password page
+                        Navigator.pop(context);
+                      },
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.settings_outlined,
+                      title: 'Settings',
+                      onTap: () {
+                        // TODO: Navigate to settings page
+                        Navigator.pop(context);
+                      },
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.help_outline,
+                      title: 'Help & Support',
+                      onTap: () {
+                        // TODO: Navigate to help page
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Divider(color: Colors.white.withOpacity(0.3), height: 1),
+              _buildLogoutButton(context),
+              _buildFooter(),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(top: 50, bottom: 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.blue[400]!,
-            Colors.blue[600]!,
-          ],
-        ),
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
       child: Column(
         children: [
           CircleAvatar(
-            radius: 35,
+            radius: 50,
             backgroundColor: Colors.white,
             child: Text(
               studentName?.isNotEmpty == true ? studentName![0].toUpperCase() : 'S',
               style: TextStyle(
-                fontSize: 30,
+                fontSize: 36,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue[600],
+                color: Colors.blue[800],
               ),
             ),
           ),
-          SizedBox(height: 12),
+          SizedBox(height: 16),
           Text(
             studentName ?? 'Student',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
             ),
           ),
           if (enrollmentNo != null) ...[
-            SizedBox(height: 4),
+            SizedBox(height: 8),
             Text(
               enrollmentNo!,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
-                fontSize: 14,
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 16,
               ),
             ),
           ],
@@ -150,26 +142,45 @@ class StudentDrawer extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    Color? color,
   }) {
     return ListTile(
       leading: Icon(
         icon,
-        size: 22,
-        color: color ?? Colors.grey[700],
+        size: 24,
+        color: Colors.white,
       ),
       title: Text(
         title,
         style: TextStyle(
-          color: color ?? Colors.grey[800],
-          fontSize: 15,
+          color: Colors.white,
+          fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
       ),
-      dense: true,
-      visualDensity: VisualDensity.compact,
       onTap: onTap,
-      horizontalTitleGap: 0,
+      contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: ElevatedButton.icon(
+        icon: Icon(Icons.logout, color: Colors.blue[800]),
+        label: Text(
+          'Logout',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        onPressed: () => _showLogoutConfirmationDialog(context),
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.blue[800], backgroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+      ),
     );
   }
 
@@ -181,21 +192,47 @@ class StudentDrawer extends StatelessWidget {
           Text(
             'MIT Event Management',
             style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 13,
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 14,
             ),
           ),
           SizedBox(height: 4),
           Text(
             'Version 1.0.0',
             style: TextStyle(
-              color: Colors.grey[500],
+              color: Colors.white.withOpacity(0.5),
               fontSize: 12,
             ),
           ),
-          SizedBox(height: 16), // Safe area padding
         ],
       ),
+    );
+  }
+
+  void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Logout'),
+          content: Text('Are you sure you want to logout?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Logout'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Provider.of<LoginProvider>(context, listen: false).logout(context);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
