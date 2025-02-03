@@ -1,6 +1,4 @@
-import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
-
 
 class CustomBottomBar extends StatelessWidget {
   final int currentIndex;
@@ -15,99 +13,76 @@ class CustomBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, 2),
+            color: Colors.grey.withOpacity(0.3),
             spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, -3),
           ),
         ],
       ),
-      child: AnimatedNotchBottomBar(
-        notchColor: Colors.blue.shade600,
-        color: Colors.white,
-        showLabel: false,
-        notchBottomBarController: NotchBottomBarController(index: currentIndex),
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
         onTap: onTap,
-        kBottomRadius: 30.0,
-        kIconSize: 28.0,
-        bottomBarItems: [
-          _buildBottomBarItem(
-            activeIcon: Icons.home,
-            inactiveIcon: Icons.home_filled,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        selectedItemColor: Colors.blue[700],
+        unselectedItemColor: Colors.grey[400],
+        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
+        items: [
+          _buildBottomNavigationBarItem(
+            icon: Icons.home,
+            label: 'Home',
             index: 0,
           ),
-          _buildBottomBarItem(
-            activeIcon: Icons.calendar_month,
-            inactiveIcon: Icons.calendar_month_outlined,
+          _buildBottomNavigationBarItem(
+            icon: Icons.calendar_today,
+            label: 'Calendar',
             index: 1,
           ),
-          _buildBottomBarItem(
-            activeIcon: Icons.person,
-            inactiveIcon: Icons.person_outline,
+          _buildBottomNavigationBarItem(
+            icon: Icons.person,
+            label: 'Profile',
             index: 2,
           ),
         ],
-        removeMargins: true,
       ),
     );
   }
 
-  BottomBarItem _buildBottomBarItem({
-    required IconData activeIcon,
-    required IconData inactiveIcon,
+  BottomNavigationBarItem _buildBottomNavigationBarItem({
+    required IconData icon,
+    required String label,
     required int index,
   }) {
-    final isActive = currentIndex == index;
-    return BottomBarItem(
-      inActiveItem: Container(
-        padding: EdgeInsets.all(8),
+    return BottomNavigationBarItem(
+      icon: Container(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Icon(
+          icon,
+          size: 24,
+        ),
+      ),
+      activeIcon: Container(
+        padding: EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
+          border: Border(
+            top: BorderSide(
+              color: Colors.blue[700]!,
+              width: 3,
+            ),
+          ),
         ),
         child: Icon(
-          inactiveIcon,
-          color: Colors.grey.shade400,
-          size: 28,
+          icon,
+          size: 24,
         ),
       ),
-      activeItem: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.blue.shade600,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
-                  blurRadius: 8,
-                  spreadRadius: 2,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-          ),
-          Positioned.fill(
-            top: -8, // Half of the container height to center it
-            child: Align(
-              alignment: Alignment.center,
-              child: Icon(
-                activeIcon,
-                color: Colors.white,
-                size: 30,
-              ),
-            ),
-          ),
-        ],
-      ),
+      label: label,
     );
   }
 }

@@ -10,6 +10,8 @@ class EventCard extends StatelessWidget {
   final int maxParticipants;
   final String registrationDeadline;
   final Function(String) onGenerateQR;
+  final String status;
+  final VoidCallback? onAnalytics;
 
   const EventCard({
     Key? key,
@@ -21,52 +23,10 @@ class EventCard extends StatelessWidget {
     required this.maxParticipants,
     required this.registrationDeadline,
     required this.onGenerateQR,
+    required this.status,
+    this.onAnalytics,
   }) : super(key: key);
 
-  String _getEventStatus() {
-    try {
-      final now = DateTime.now();
-      final eventDate = DateTime.parse(date);
-      final deadline = DateTime.parse(registrationDeadline);
-
-      // Parse start and end times
-      final startTimeParts = startTime.split(':');
-      final endTimeParts = endTime.split(':');
-      final eventStartTime = DateTime(
-          eventDate.year, eventDate.month, eventDate.day,
-          int.parse(startTimeParts[0]), int.parse(startTimeParts[1])
-      );
-      var eventEndTime = DateTime(
-          eventDate.year, eventDate.month, eventDate.day,
-          int.parse(endTimeParts[0]), int.parse(endTimeParts[1])
-      );
-
-      // If end time is before start time, assume it's the next day
-      if (eventEndTime.isBefore(eventStartTime)) {
-        eventEndTime = eventEndTime.add(Duration(days: 1));
-      }
-
-      print('Debug: Current date: $now');
-      print('Debug: Event date: $eventDate');
-      print('Debug: Event start time: $eventStartTime');
-      print('Debug: Event end time: $eventEndTime');
-      print('Debug: Registration deadline: $deadline');
-
-      if (now.isAfter(eventEndTime)) {
-        return 'Completed';
-      } else if (now.isBefore(deadline)) {
-        if (registrations >= maxParticipants) {
-          return 'Full';
-        }
-        return 'Active';
-      } else {
-        return 'Registration Closed';
-      }
-    } catch (e) {
-      print('Error determining event status: $e');
-      return 'Unknown';
-    }
-  }
 
   Color _getStatusColor(String status) {
     switch (status) {
@@ -96,7 +56,6 @@ class EventCard extends StatelessWidget {
       print('Error formatting date: $e');
     }
 
-    final status = _getEventStatus();
     final statusColor = _getStatusColor(status);
 
     print('Debug: Final status: $status');
@@ -203,21 +162,42 @@ class EventCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => onGenerateQR(title),
-                    icon: Icon(Icons.qr_code),
-                    label: Text('Generate QR'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[700],
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => onGenerateQR(title),
+                        icon: Icon(Icons.qr_code),
+                        label: Text('Generate QR'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    if (status == 'Completed' && onAnalytics != null) ...[
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: onAnalytics,
+                          icon: Icon(Icons.analytics),
+                          label: Text('Analytics'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[700],
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
