@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mit_event/utils/screen_size.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/providers/login_provider.dart';
-import '../screens/Student/my_events_page.dart';
+import '../../../core/providers/login_provider.dart';
+import '../../screens/Student/my_events_page.dart';
 
 class StudentDrawer extends StatelessWidget {
   final String? studentName;
@@ -37,7 +38,7 @@ class StudentDrawer extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   children: [
                     _buildHeader(),
-                    SizedBox(height: 20),
+                    SizedBox(height: ScreenSize.height(context,20)),
                     _buildMenuItem(
                       icon: Icons.person_outline,
                       title: 'My Profile',

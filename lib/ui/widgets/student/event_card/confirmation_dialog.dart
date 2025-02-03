@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mit_event/utils/screen_size.dart';
 
 class ConfirmationDialog extends StatelessWidget {
   final String title;
@@ -40,8 +41,8 @@ class ConfirmationDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 70,
-              height: 70,
+              width: ScreenSize.width(context,4),
+              height: ScreenSize.height(context,9),
               decoration: BoxDecoration(
                 color: Colors.blue.withOpacity(0.1),
                 shape: BoxShape.circle,

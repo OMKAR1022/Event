@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../core/providers/event_registration_provider.dart';
+
+import '../../../../core/providers/event_registration_provider.dart';
+
 
 
 class EventCardRegistration extends StatelessWidget {
@@ -72,7 +74,7 @@ class EventCardRegistration extends StatelessWidget {
                   onPressed: (status == 'Active' && !isRegistered && currentStudentId != null)
                       ? () => onRegister()
                       : null,
-                  child: Text(isRegistered ? 'Already Registered' : 'Register'),
+                  child: Text(isRegistered ? 'Already Registered' : 'Register',),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: isRegistered ? Colors.grey : Colors.blue,

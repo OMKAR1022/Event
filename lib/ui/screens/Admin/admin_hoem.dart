@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mit_event/ui/screens/Admin/create_event.dart';
 import 'package:provider/provider.dart';
-import 'package:mit_event/ui/widgets/club_event_card.dart';
+import 'package:mit_event/ui/widgets/admin/club_event_card.dart';
 import '../../../core/providers/event_provider.dart';
-import '../../widgets/DashboardCard.dart';
+import '../../widgets/admin/DashboardCard.dart';
 import '../../widgets/custom_bottom_bar.dart';
-import '../../widgets/qr_code_model.dart';
+import '../../widgets/admin/qr_code_model.dart';
 import 'calender_screen.dart';
 import 'profile_screen.dart';
-
 import 'package:intl/intl.dart';
 import 'event_analytics_page.dart';
 
@@ -261,7 +260,7 @@ class _AdminHomeState extends State<AdminHome> {
         return EventCard(
           title: event['title'] ?? 'Untitled Event',
           date: event['date'] ?? 'No Date Available',
-          startTime: event['start_time'] ?? 'N/A',
+          startTime: event['start_time']?.substring(0, 5) ?? 'N/A',
           endTime: event['end_time'] ?? 'N/A',
           registrations: event['registrations'] ?? 0,
           maxParticipants: event['max_participants'] ?? 0,
