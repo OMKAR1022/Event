@@ -18,7 +18,6 @@ class StudentEventProvider with ChangeNotifier {
 
   StudentEventProvider() {
     _initializeRealTimeUpdates();
-    fetchAllEvents();
   }
 
   void _initializeRealTimeUpdates() {
@@ -54,6 +53,8 @@ class StudentEventProvider with ChangeNotifier {
   }
 
   Future<void> fetchAllEvents() async {
+    if (_isLoading) return;
+
     _isLoading = true;
     notifyListeners();
 
@@ -63,7 +64,7 @@ class StudentEventProvider with ChangeNotifier {
       final response = await supabase
           .from('event')
           .select('*, clubs(name)')
-          .order('date', ascending: true);
+          .order('created_at', ascending: false);
 
       _events = await Future.wait(List<Map<String, dynamic>>.from(response).map((event) async {
         final registrationCount = await _fetchRegistrationCount(event['id'].toString());
@@ -73,6 +74,7 @@ class StudentEventProvider with ChangeNotifier {
           'registration_deadline': event['registration_deadline'] != null
               ? DateTime.parse(event['registration_deadline']).toIso8601String()
               : null,
+          'created_at': event['created_at'] != null ? DateTime.parse(event['created_at']).toIso8601String() : null,
           'registrations': registrationCount,
         };
       }).toList());
@@ -81,7 +83,7 @@ class StudentEventProvider with ChangeNotifier {
       _eventsStreamController.add(_events);
       print('Fetched Events for Students: $_events');
     } catch (e) {
-      debugPrint('Error fetching events for students: $e');
+      print('Error fetching events for students: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -99,7 +101,7 @@ class StudentEventProvider with ChangeNotifier {
 
       return response.length;
     } catch (e) {
-      debugPrint('Error fetching registration count: $e');
+      print('Error fetching registration count: $e');
       return 0;
     }
   }

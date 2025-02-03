@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:mit_event/ui/widgets/student/search_bar.dart';
+import 'package:mit_event/utils/app_colors.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 import '../../../core/providers/student_event_provider.dart';
-
-import '../../widgets/event_card/event_card.dart';
-import 'notification_page.dart';
-import '../../../core/providers/notification_provider.dart';
-import '../../widgets/student_drawer.dart';
+import '../../widgets/student/category_tabs.dart';
+import '../../widgets/student/event_list.dart';
+import '../../widgets/student/image_preview.dart';
+import '../../widgets/student/offline_message.dart';
+import '../../widgets/student/student_app_bar.dart';
+import '../../widgets/student/student_drawer.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '../../../utils/network_utils.dart';
 
 class StudentHome extends StatefulWidget {
   final String? currentStudentId;
@@ -27,16 +33,29 @@ class StudentHome extends StatefulWidget {
   _StudentHomeState createState() => _StudentHomeState();
 }
 
-class _StudentHomeState extends State<StudentHome> {
+class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin {
   String? _previewImageUrl;
   final List<String> _categories = ["All", "Academic", "Cultural", "Sports", "Technical", "Workshop", "Other"];
   int _selectedIndex = 0;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  bool _hasInternet = true;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
+    _checkConnectivity();
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(_updateConnectionStatus);
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+    _animationController.forward();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<StudentEventProvider>(context, listen: false).fetchAllEvents();
     });
@@ -44,6 +63,8 @@ class _StudentHomeState extends State<StudentHome> {
 
   @override
   void dispose() {
+    _animationController.dispose();
+    _connectivitySubscription.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -60,300 +81,115 @@ class _StudentHomeState extends State<StudentHome> {
     });
   }
 
-  List<Map<String, dynamic>> _filterEvents(List<Map<String, dynamic>> events, String category) {
-    return events.where((event) {
-      final matchesSearch = event['title'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          event['clubs']['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesCategory = category == "All" || event['category'] == category;
-      return matchesSearch && matchesCategory;
-    }).toList();
+  Future<void> _checkConnectivity() async {
+    _hasInternet = await NetworkUtils.hasInternetConnection();
+    setState(() {});
+  }
+
+  void _updateConnectionStatus(List<ConnectivityResult> result) async {
+    bool hasInternet = result.isNotEmpty && result.first != ConnectivityResult.none;
+    if (hasInternet != _hasInternet) {
+      setState(() {
+        _hasInternet = hasInternet;
+      });
+      if (hasInternet) {
+        await Provider.of<StudentEventProvider>(context, listen: false).fetchAllEvents();
+      }
+      _showConnectivitySnackBar(hasInternet);
+    }
+  }
+
+  void _showConnectivitySnackBar(bool hasInternet) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          hasInternet ? 'Back online' : 'You are offline. Some features may be limited.',
+        ),
+        duration: Duration(seconds: 3),
+        backgroundColor: hasInternet ? Colors.green : Colors.orange,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      drawer: StudentDrawer(
-        studentName: widget.studentName,
-        enrollmentNo: widget.enrollmentNo,
-        email: widget.email,
-        phoneNo: widget.phoneNo,
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await Provider.of<StudentEventProvider>(context, listen: false).fetchAllEvents();
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    _buildAppBar(),
-                    _buildCategoryTabs(),
-                  ],
-                ),
-              ),
-              StreamBuilder<List<Map<String, dynamic>>>(
-                stream: Provider.of<StudentEventProvider>(context, listen: false).eventsStream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return SliverFillRemaining(
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  if (snapshot.hasError) {
-                    return SliverFillRemaining(
-                      child: Center(child: Text('Error: ${snapshot.error}')),
-                    );
-                  }
-                  final events = snapshot.data ?? [];
-                  final filteredEvents = _filterEvents(events, _categories[_selectedIndex]);
-                  return SliverPadding(
-                    padding: EdgeInsets.all(16.0),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                          final event = filteredEvents[index];
-                          return EventCard(
-                            title: event['title'] ?? 'N/A',
-                            date: event['date'] ?? 'N/A',
-                            startTime: event['start_time'] ?? 'N/A',
-                            endTime: event['end_time'] ?? 'N/A',
-                            venue: event['venue'] ?? 'N/A',
-                            category: event['category'] ?? 'N/A',
-                            maxParticipants: event['max_participants'] ?? 0,
-                            registrationDeadline: event['registration_deadline'] ?? 'N/A',
-                            imageUrl: event['image_url'] ?? '',
-                            id: event['id'],
-                            registrations: event['registrations'] ?? 0,
-                            onImageTap: () => _showImagePreview(event['image_url'] ?? ''),
-                            clubName: event['clubs']['name'] ?? 'N/A',
-                            currentStudentId: widget.currentStudentId,
-                          );
-                        },
-                        childCount: filteredEvents.length,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+    return Theme(
+      data: Theme.of(context).copyWith(
+        scaffoldBackgroundColor: AppColors.background,
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppColors.background,
+          elevation: 0,
         ),
       ),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Scaffold(
+        backgroundColor:Colors.blue[50],
+        drawer: StudentDrawer(
+          studentName: widget.studentName,
+          enrollmentNo: widget.enrollmentNo,
+          email: widget.email,
+          phoneNo: widget.phoneNo,
+        ),
+        body: SafeArea(
+          child: Stack(
             children: [
-              Row(
-                children: [
-                  Builder(
-                    builder: (context) => IconButton(
-                      icon: Icon(Icons.menu, color: Colors.blue[800]),
-                      onPressed: () {
-                        Scaffold.of(context).openDrawer();
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Hello, ${widget.studentName ?? 'Student'}!',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue[800],
-                    ),
-                  ),
-                ],
-              ),
-              Stack(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.notifications, color: Colors.blue[800]),
-                    onPressed: () {
-                      final notificationProvider = Provider.of<NotificationProvider>(
-                          context,
-                          listen: false
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => NotificationPage()),
-                      ).then((_) {
-                        notificationProvider.markAllAsRead();
-                      });
-                    },
-                  ),
-                  Consumer<NotificationProvider>(
-                    builder: (context, provider, child) {
-                      if (!provider.hasUnreadNotifications) return SizedBox.shrink();
-                      return Positioned(
-                        right: 8,
-                        top: 8,
+              if (!_hasInternet)
+                OfflineMessage(onRetry: () async {
+                  await _checkConnectivity();
+                  if (_hasInternet) {
+                    Provider.of<StudentEventProvider>(context, listen: false).fetchAllEvents();
+                  }
+                })
+              else
+                RefreshIndicator(
+                  onRefresh: () async {
+                    await Provider.of<StudentEventProvider>(context, listen: false).fetchAllEvents();
+                  },
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
                         child: Container(
-                          padding: EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: BoxConstraints(
-                            minWidth: 8,
-                            minHeight: 8,
+                          color: Colors.blue[50],
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: [
+                              StudentAppBar(
+                                studentName: widget.studentName ?? 'Student',
+                                onMenuPressed: () => Scaffold.of(context).openDrawer(),
+                              ),
+                              SizedBox(height: 20),
+                              SearchBar_student(
+                                controller: _searchController,
+                                onChanged: (value) => setState(() => _searchQuery = value),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
+                      ),
+                      SliverToBoxAdapter(
+                        child: CategoryTabs(
+                          categories: _categories,
+                          selectedIndex: _selectedIndex,
+                          onCategorySelected: (index) {
+                            setState(() => _selectedIndex = index);
+                            _animationController.reset();
+                            _animationController.forward();
+                          },
+                        ),
+                      ),
+                      EventList(
+                        selectedCategory: _categories[_selectedIndex],
+                        searchQuery: _searchQuery,
+                        currentStudentId: widget.currentStudentId,
+                        onImageTap: _showImagePreview,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: "Search events by title or club...",
-              prefixIcon: Icon(Icons.search, color: Colors.grey),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                icon: Icon(Icons.clear),
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() {
-                    _searchQuery = '';
-                  });
-                },
-              )
-                  : null,
-              filled: true,
-              fillColor: Colors.grey[200],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30.0),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: EdgeInsets.symmetric(vertical: 0),
-            ),
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryTabs() {
-    return Container(
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            child: Container(
-              alignment: Alignment.center,
-              margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: _selectedIndex == index ? Colors.blue : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Text(
-                _categories[index],
-                style: TextStyle(
-                  color: _selectedIndex == index ? Colors.white : Colors.black,
-                  fontWeight: FontWeight.bold,
                 ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEventList(List<Map<String, dynamic>> events) {
-    if (events.isEmpty) {
-      return SliverFillRemaining(
-        child: Center(
-          child: Text(
-            'No events found.\nTry a different search or category.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-          ),
-        ),
-      );
-    }
-
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-            (context, index) {
-          final event = events[index];
-          return EventCard(
-            title: event['title'] ?? 'N/A',
-            date: event['date'] ?? 'N/A',
-            startTime: event['start_time'] ?? 'N/A',
-            endTime: event['end_time'] ?? 'N/A',
-            venue: event['venue'] ?? 'N/A',
-            category: event['category'] ?? 'N/A',
-            maxParticipants: event['max_participants'] ?? 0,
-            registrationDeadline: event['registration_deadline'] ?? 'N/A',
-            imageUrl: event['image_url'] ?? '',
-            id: event['id'],
-            registrations: event['registrations'] ?? 0,
-            onImageTap: () => _showImagePreview(event['image_url'] ?? ''),
-            clubName: event['clubs']['name'] ?? 'N/A',
-            currentStudentId: widget.currentStudentId,
-          );
-        },
-        childCount: events.length,
-      ),
-    );
-  }
-
-  Widget _buildImagePreview() {
-    return GestureDetector(
-      onTap: _hideImagePreview,
-      child: Container(
-        color: Colors.black.withOpacity(0.9),
-        child: Center(
-          child: Stack(
-            alignment: Alignment.topRight,
-            children: [
-              Image.network(
-                _previewImageUrl!,
-                fit: BoxFit.contain,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: IconButton(
-                  icon: Icon(Icons.close, color: Colors.white),
-                  onPressed: _hideImagePreview,
+              if (_previewImageUrl != null)
+                ImagePreview(
+                  imageUrl: _previewImageUrl!,
+                  onClose: _hideImagePreview,
                 ),
-              ),
             ],
           ),
         ),
