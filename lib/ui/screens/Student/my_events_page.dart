@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mit_event/utils/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/registered_events_provider.dart';
 import '../../widgets/registered_event_card.dart';
@@ -28,8 +29,10 @@ class _MyEventsPageState extends State<MyEventsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
+        centerTitle: false,
+
         title: Text(
           'My Events',
           style: TextStyle(
@@ -38,7 +41,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey[100],
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: Colors.black87, size: 20),
