@@ -11,9 +11,11 @@ class LoginProvider with ChangeNotifier {
   final _supabase = Supabase.instance.client;
   String? _clubId;
   String? _studentId;
+  String? _loggedInUserId;
   String? _studentName;
   String? get clubId => _clubId;
   String? get studentId => _studentId;
+  String? get loggedInUserId => _loggedInUserId;
   String? get studentName => _studentName;
 
   Future<void> login(String username, String password, BuildContext context) async {
@@ -29,6 +31,7 @@ class LoginProvider with ChangeNotifier {
       if (response != null) {
         if (password == response['password_hash']) {
           _clubId = response['club_id'].toString();
+          _loggedInUserId = response['id'].toString();
           notifyListeners();
 
           print('Club ID from database: ${response['club_id']}');
@@ -125,6 +128,7 @@ class LoginProvider with ChangeNotifier {
     _clubId = null;
     _studentId = null;
     _studentName = null;
+    _loggedInUserId = null;
     notifyListeners();
 
     // Navigate to the login screen

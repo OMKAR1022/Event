@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mit_event/utils/screen_size.dart';
 
-class CategoryTabs extends StatelessWidget {
+class FilterTabs extends StatelessWidget {
   final List<String> categories;
   final int selectedIndex;
   final Function(int) onCategorySelected;
 
-  const CategoryTabs({
+  const FilterTabs({
     Key? key,
     required this.categories,
     required this.selectedIndex,
@@ -16,7 +15,8 @@ class CategoryTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: ScreenSize.height(context,30),
+      height:35,
+      margin: EdgeInsets.symmetric(vertical: 16),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
@@ -44,7 +44,7 @@ class CategoryTabs extends StatelessWidget {
                         ? Colors.blue[300]!.withOpacity(0.3)
                         : Colors.grey[300]!,
                     blurRadius: 2,
-                    offset: Offset(-1, 2),
+                    offset: Offset(-1, 1),
                   ),
                 ],
               ),

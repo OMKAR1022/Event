@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:mit_event/ui/widgets/student/search_bar.dart';
+import '../../widgets/category_tabs.dart';
+import '../../widgets/student/search_bar.dart';
 import 'package:mit_event/utils/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../../core/providers/student_event_provider.dart';
-import '../../widgets/student/category_tabs.dart';
+
 import '../../widgets/student/event_list.dart';
 import '../../widgets/student/image_preview.dart';
 import '../../widgets/student/offline_message.dart';
 import '../../widgets/student/student_app_bar.dart';
 import '../../widgets/student/student_drawer.dart';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../utils/network_utils.dart';
+
 
 class StudentHome extends StatefulWidget {
   final String? currentStudentId;
@@ -115,14 +118,14 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(
-        scaffoldBackgroundColor: AppColors.background,
+        scaffoldBackgroundColor: Colors.white,
         appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.background,
+          backgroundColor: Colors.white,
           elevation: 0,
         ),
       ),
       child: Scaffold(
-        backgroundColor:AppColors.background,
+        backgroundColor: Colors.white,
         drawer: StudentDrawer(
           studentName: widget.studentName,
           enrollmentNo: widget.enrollmentNo,
@@ -145,10 +148,11 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
                     await Provider.of<StudentEventProvider>(context, listen: false).fetchAllEvents();
                   },
                   child: CustomScrollView(
+
                     slivers: [
                       SliverToBoxAdapter(
                         child: Container(
-                          color:AppColors.background,
+                          color: Colors.white,
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
                             children: [
@@ -156,7 +160,7 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
                                 studentName: widget.studentName ?? 'Student',
                                 onMenuPressed: () => Scaffold.of(context).openDrawer(),
                               ),
-                              SizedBox(height: 20),
+                              SizedBox(height: 24),
                               SearchBar_student(
                                 controller: _searchController,
                                 onChanged: (value) => setState(() => _searchQuery = value),
@@ -166,16 +170,17 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
                         ),
                       ),
                       SliverToBoxAdapter(
-                        child: CategoryTabs(
+                        child: FilterTabs(
                           categories: _categories,
                           selectedIndex: _selectedIndex,
                           onCategorySelected: (index) {
                             setState(() => _selectedIndex = index);
-                            _animationController.reset();
-                            _animationController.forward();
+                        /*    _animationController.reset();
+                            _animationController.forward();*/
                           },
                         ),
                       ),
+
                       EventList(
                         selectedCategory: _categories[_selectedIndex],
                         searchQuery: _searchQuery,
