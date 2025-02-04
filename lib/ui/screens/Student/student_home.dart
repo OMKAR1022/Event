@@ -122,7 +122,7 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
         ),
       ),
       child: Scaffold(
-        backgroundColor:Colors.blue[50],
+        backgroundColor:AppColors.background,
         drawer: StudentDrawer(
           studentName: widget.studentName,
           enrollmentNo: widget.enrollmentNo,
@@ -148,7 +148,7 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
                     slivers: [
                       SliverToBoxAdapter(
                         child: Container(
-                          color: Colors.blue[50],
+                          color:AppColors.background,
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
                             children: [

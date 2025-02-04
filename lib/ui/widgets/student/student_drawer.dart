@@ -39,14 +39,7 @@ class StudentDrawer extends StatelessWidget {
                   children: [
                     _buildHeader(),
                     SizedBox(height: ScreenSize.height(context,20)),
-                    _buildMenuItem(
-                      icon: Icons.person_outline,
-                      title: 'My Profile',
-                      onTap: () {
-                        // TODO: Navigate to profile page
-                        Navigator.pop(context);
-                      },
-                    ),
+
                     _buildMenuItem(
                       icon: Icons.event_outlined,
                       title: 'My Events',
@@ -71,7 +64,7 @@ class StudentDrawer extends StatelessWidget {
                     ),
                     _buildMenuItem(
                       icon: Icons.settings_outlined,
-                      title: 'Settings',
+                      title: 'Change Email',
                       onTap: () {
                         // TODO: Navigate to settings page
                         Navigator.pop(context);

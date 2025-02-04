@@ -36,7 +36,7 @@ class StudentAppBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hello,',
+                  'Hello 👋,',
                   style: TextStyle(
                     shadows: [
                       Shadow(
@@ -46,22 +46,25 @@ class StudentAppBar extends StatelessWidget {
                       )
                     ],
                     fontSize: 18,
-                    color: Colors.blue,
+                    color: Colors.black,
                   ),
                 ),
-                Text(
-                  studentName,
-                  style: TextStyle(
-                    shadows: [
-                      Shadow(
-                          color: Colors.black38,
-                          blurRadius: 10,
-                          offset: Offset(-2, 1)
-                      )
-                    ],
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: Text(
+                    studentName,
+                    style: TextStyle(
+                      shadows: [
+                        Shadow(
+                            color: Colors.black38,
+                            blurRadius: 10,
+                            offset: Offset(-2, 1)
+                        )
+                      ],
+                      fontSize: 24,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ],
