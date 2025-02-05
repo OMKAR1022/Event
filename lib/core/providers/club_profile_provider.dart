@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ClubProfileProvider with ChangeNotifier {
   final _supabase = Supabase.instance.client;
+
   bool _isLoading = false;
   String _clubName = '';
   int _memberCount = 0;
@@ -17,7 +18,9 @@ class ClubProfileProvider with ChangeNotifier {
   Map<String, dynamic>? get currentUser => _currentUser;
   String? get errorMessage => _errorMessage;
 
-  Future<void> fetchClubProfile(String clubId) async {
+
+
+  Future<void> fetchClubProfile(String clubId, String loggedInUserId) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -41,10 +44,19 @@ class ClubProfileProvider with ChangeNotifier {
       _memberCount = membersResponse.length;
       _clubMembers = List<Map<String, dynamic>>.from(membersResponse);
 
-      // Fetch current user information (assuming it's the first member for now)
+      // Set the current user using _loggedInUserId
       if (_clubMembers.isNotEmpty) {
-        _currentUser = _clubMembers[0];
+        _currentUser = _clubMembers.firstWhere(
+              (member) => member['id'].toString() == loggedInUserId,
+          orElse: () => _clubMembers[0],
+        );
+      } else {
+        _currentUser = null;
       }
+
+
+
+
 
       _isLoading = false;
       notifyListeners();

@@ -24,7 +24,7 @@ class LoginProvider with ChangeNotifier {
 
       final response = await supabase
           .from('club_members')
-          .select('email, password_hash, club_id')
+          .select('id, email, password_hash, club_id')
           .eq('email', username)
           .maybeSingle();
 
@@ -36,6 +36,9 @@ class LoginProvider with ChangeNotifier {
 
           print('Club ID from database: ${response['club_id']}');
           print('Club ID type: ${response['club_id'].runtimeType}');
+          print('loginuser id :$_loggedInUserId');
+          print('Fetched user data: $response');
+
 
           final clubId = response['club_id'].toString();
           print('Using Club ID as String: $clubId');

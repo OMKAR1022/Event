@@ -18,11 +18,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     // Fetch club profile data after the widget is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final clubId = Provider.of<LoginProvider>(context, listen: false).clubId;
-      if (clubId != null) {
-        Provider.of<ClubProfileProvider>(context, listen: false).fetchClubProfile(clubId);
+      final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+      final clubId = loginProvider.clubId;
+      final loggedInUserId = loginProvider.loggedInUserId;
+      if (clubId != null && loggedInUserId != null) {
+        Provider.of<ClubProfileProvider>(context, listen: false)
+            .fetchClubProfile(clubId, loggedInUserId);
       }
     });
+
   }
 
   @override
@@ -67,9 +71,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
 
           return RefreshIndicator(
-            onRefresh: () => profileProvider.fetchClubProfile(clubId),
+            onRefresh: () {
+              final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+              final loggedInUserId = loginProvider.loggedInUserId;
+              if (loggedInUserId != null) {
+                return profileProvider.fetchClubProfile(clubId, loggedInUserId);
+              } else {
+                // Return a completed Future if loggedInUserId is null
+                return Future.value();
+              }
+            },
             child: _buildProfileContent(profileProvider, context),
           );
+
         },
       ),
     );
