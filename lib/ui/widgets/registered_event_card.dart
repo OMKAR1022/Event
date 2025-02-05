@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/providers/registered_events_provider.dart';
 import 'animated_status_dot.dart';
+import 'event_info.dart';
 
 class RegisteredEventCard extends StatelessWidget {
   final Map<String, dynamic> event;
@@ -122,50 +123,11 @@ class RegisteredEventCard extends StatelessWidget {
               ),
             ),
             SizedBox(height: 15,),
-            IntrinsicHeight( // Use IntrinsicHeight for vertical divider
-              child: Row(
-                //mainAxisAlignment: MainAxisAlignment.start, // Even spacing
-                children: [
-                  SizedBox(width: 10,),
-                  Column(
-                    children: [
-                      Text(formattedDate, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                      SizedBox(height: 4),
-                      Text('Date', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    ],
-                  ),
-                  SizedBox(width: 10,),
-                  VerticalDivider(color: Colors.grey), // Vertical divider
-                  SizedBox(width: 10,),
-                  Column(
-                    children: [
-                      Row(
-                        children: [
-                          Text('$formattedTime ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                          Text('- $formattedendtime', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                        ],
-                      ),
-                      SizedBox(height: 4),
-                      Text('Time', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    ],
-                  ),
-                  SizedBox(width: 10,),
-                  VerticalDivider(color: Colors.grey),
-                  SizedBox(width: 10,),
-                  Column(
-                    children: [
-                      Row(
-                        children: [
-                          Text(event['venue'], style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                        ],
-                      ),
-                      SizedBox(height: 4),
-                      Text('Venue', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            EventInfoCard(
+                formattedDate: formattedDate,
+                formattedStartTime: '$formattedTime',
+                formattedEndTime: '$formattedendtime',
+                venue: event['venue']),
             SizedBox(height: 8),
 
 

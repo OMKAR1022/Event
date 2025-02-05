@@ -39,15 +39,11 @@ class CustomBottomBar extends StatelessWidget {
             label: 'Home',
             index: 0,
           ),
-          _buildBottomNavigationBarItem(
-            icon: Icons.calendar_today,
-            label: 'Calendar',
-            index: 1,
-          ),
+
           _buildBottomNavigationBarItem(
             icon: Icons.person,
             label: 'Profile',
-            index: 2,
+            index: 1,
           ),
         ],
       ),

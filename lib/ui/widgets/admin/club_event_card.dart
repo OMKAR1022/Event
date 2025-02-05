@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mit_event/ui/widgets/custom_button.dart';
+import 'package:mit_event/ui/widgets/event_info.dart';
 
 class EventCard extends StatelessWidget {
   final String title;
@@ -12,6 +14,7 @@ class EventCard extends StatelessWidget {
   final Function(String) onGenerateQR;
   final String status;
   final VoidCallback? onAnalytics;
+  final String venue;
 
   const EventCard({
     Key? key,
@@ -24,6 +27,7 @@ class EventCard extends StatelessWidget {
     required this.registrationDeadline,
     required this.onGenerateQR,
     required this.status,
+    required this.venue,
     this.onAnalytics,
   }) : super(key: key);
 
@@ -44,13 +48,16 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String formattedDate = 'N/A';
-    String formattedTime = 'N/A';
+    String formattedStartTime = 'N/A';
+    String formattedEndTime ='N/A';
 
     try {
       if (date != 'N/A') {
         final eventDate = DateTime.parse(date);
         formattedDate = DateFormat('MMM dd, yyyy').format(eventDate);
-        formattedTime = startTime;
+        formattedStartTime = startTime;
+        formattedEndTime = endTime.substring(0,5);
+
       }
     } catch (e) {
       print('Error formatting date: $e');
@@ -61,6 +68,7 @@ class EventCard extends StatelessWidget {
     print('Debug: Final status: $status');
 
     return Card(
+      color: Colors.white,
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -121,13 +129,11 @@ class EventCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: 8),
-            Text(
-              '$formattedDate • $formattedTime',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
-            ),
+           EventInfoCard(
+               formattedDate: formattedDate,
+               formattedStartTime: formattedStartTime,
+               formattedEndTime: formattedEndTime,
+               venue: venue),
             SizedBox(height: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,36 +171,21 @@ class EventCard extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton.icon(
+                      child: CustomButton(
+                          title: 'Generate QR',
                         onPressed: () => onGenerateQR(title),
-                        icon: Icon(Icons.qr_code),
-                        label: Text('Generate QR'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[700],
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
+                        icon: Icons.qr_code, color_1: Colors.blue,color_2: Colors.purple,
+                        //backgroundColor: Colors.blue[700]!,
+                      )
                     ),
                     if (status == 'Completed' && onAnalytics != null) ...[
                       SizedBox(width: 8),
                       Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: onAnalytics,
-                          icon: Icon(Icons.analytics),
-                          label: Text('Analytics'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[700],
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
+                        child:CustomButton(
+                          title: 'Analytics',
+                          onPressed: onAnalytics!,
+                          icon: Icons.analytics,color_1: Colors.teal[700]!,color_2: Colors.teal[200]!,
+                        )
                       ),
                     ],
                   ],

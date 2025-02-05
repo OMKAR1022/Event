@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:mit_event/ui/screens/Admin/create_event.dart';
+import 'package:mit_event/ui/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 import 'package:mit_event/ui/widgets/admin/club_event_card.dart';
 import '../../../core/providers/event_provider.dart';
 import '../../widgets/admin/DashboardCard.dart';
-import '../../widgets/custom_bottom_bar.dart';
+
 import '../../widgets/admin/qr_code_model.dart';
+
+import '../../widgets/custom_bottom_bar.dart';
+import '../../widgets/category_tabs.dart';
 import 'calender_screen.dart';
 import 'profile_screen.dart';
+
 import 'package:intl/intl.dart';
 import 'event_analytics_page.dart';
+
 
 class AdminHome extends StatefulWidget {
   final String clubName;
@@ -31,6 +37,7 @@ class _AdminHomeState extends State<AdminHome> {
   int _currentIndex = 1; // Update 1
   final PageController _pageController = PageController(initialPage: 1); // Update 2
   String _selectedFilter = 'All';
+  final List<String> _categories = ['All', 'Active', 'Completed', 'Registration Closed']; // Update 3
 
   @override
   void initState() {
@@ -90,9 +97,9 @@ class _AdminHomeState extends State<AdminHome> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildDashboardCards(eventProvider),
-                        SizedBox(height: 24),
-                        _buildFilterChips(),
-                        SizedBox(height: 16),
+                        SizedBox(height: 10),
+                        _buildFilterTabs(), // Update 4
+                        SizedBox(height: 10),
                         Text(
                           'Recent Events',
                           style: TextStyle(
@@ -129,7 +136,6 @@ class _AdminHomeState extends State<AdminHome> {
           },
           children: [
             _buildMainContent(),
-            CalendarScreen(),
             ProfileScreen(),
           ],
         ),
@@ -166,32 +172,26 @@ class _AdminHomeState extends State<AdminHome> {
                 widget.clubName,
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[600],
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[700],
                 ),
               ),
             ],
           ),
-          ElevatedButton.icon(
-            onPressed: () async {
-              await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => CreateEventScreen(clubId: widget.clubId)
-                  )
-              );
-              Provider.of<EventProvider>(context, listen: false).fetchEvents(widget.clubId);
-            },
-            icon: Icon(Icons.add),
-            label: Text('New Event'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[600],
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
+         CustomButton(
+             title: 'New Event',
+             onPressed: () async {
+               await Navigator.push(
+                   context,
+                   MaterialPageRoute(
+                       builder: (context) => CreateEventScreen(clubId: widget.clubId)
+                   )
+               );
+               Provider.of<EventProvider>(context, listen: false).fetchEvents(widget.clubId);
+             },
+             icon: Icons.add,
+             color_1: Colors.blue[700]!,
+             color_2: Colors.blue[300]!)
         ],
       ),
     );
@@ -210,7 +210,7 @@ class _AdminHomeState extends State<AdminHome> {
             title: 'Total Events',
             count: displayedTotalEvents,
             icon: Icons.event,
-            color: Colors.blue,
+            color: Colors.blue[700]!,
           ),
         ),
         SizedBox(width: 16),
@@ -219,7 +219,7 @@ class _AdminHomeState extends State<AdminHome> {
             title: 'Total Registrations',
             count: totalRegistrations,
             icon: Icons.person,
-            color: Colors.green,
+            color: Colors.teal,
           ),
         ),
       ],
@@ -277,50 +277,19 @@ class _AdminHomeState extends State<AdminHome> {
                 ),
               ),
             );
-          } : null,
+          } : null, venue: event['venue'],
         );
       },
     );
   }
 
-  Widget _buildFilterChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          FilterChip(
-            label: Text('All'),
-            selected: _selectedFilter == 'All',
-            onSelected: (selected) {
-              setState(() => _selectedFilter = 'All');
-            },
-          ),
-          SizedBox(width: 8),
-          FilterChip(
-            label: Text('Active'),
-            selected: _selectedFilter == 'Active',
-            onSelected: (selected) {
-              setState(() => _selectedFilter = 'Active');
-            },
-          ),
-          SizedBox(width: 8),
-          FilterChip(
-            label: Text('Completed'),
-            selected: _selectedFilter == 'Completed',
-            onSelected: (selected) {
-              setState(() => _selectedFilter = 'Completed');
-            },
-          ),
-          SizedBox(width: 8),
-          FilterChip(
-            label: Text('Registration Closed'),
-            selected: _selectedFilter == 'Registration Closed',
-            onSelected: (selected) {
-              setState(() => _selectedFilter = 'Registration Closed');
-            },
-          ),
-        ],
-      ),
+  Widget _buildFilterTabs() { // Update 2
+    return FilterTabs(
+      categories: ['All', 'Active', 'Completed', 'Registration Closed'],
+      selectedIndex: _categories.indexOf(_selectedFilter),
+      onCategorySelected: (index) {
+        setState(() => _selectedFilter = _categories[index]);
+      },
     );
   }
 }

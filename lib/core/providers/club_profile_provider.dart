@@ -3,20 +3,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ClubProfileProvider with ChangeNotifier {
   final _supabase = Supabase.instance.client;
+
   bool _isLoading = false;
   String _clubName = '';
   int _memberCount = 0;
   List<Map<String, dynamic>> _clubMembers = [];
   Map<String, dynamic>? _currentUser;
+  String? _errorMessage;
 
   bool get isLoading => _isLoading;
   String get clubName => _clubName;
   int get memberCount => _memberCount;
   List<Map<String, dynamic>> get clubMembers => _clubMembers;
   Map<String, dynamic>? get currentUser => _currentUser;
+  String? get errorMessage => _errorMessage;
 
-  Future<void> fetchClubProfile(String clubId) async {
+
+
+  Future<void> fetchClubProfile(String clubId, String loggedInUserId) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
@@ -38,16 +44,25 @@ class ClubProfileProvider with ChangeNotifier {
       _memberCount = membersResponse.length;
       _clubMembers = List<Map<String, dynamic>>.from(membersResponse);
 
-      // Fetch current user information (assuming it's the first member for now)
+      // Set the current user using _loggedInUserId
       if (_clubMembers.isNotEmpty) {
-        _currentUser = _clubMembers[0];
+        _currentUser = _clubMembers.firstWhere(
+              (member) => member['id'].toString() == loggedInUserId,
+          orElse: () => _clubMembers[0],
+        );
+      } else {
+        _currentUser = null;
       }
+
+
+
+
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      print('Error fetching club profile: $e');
       _isLoading = false;
+      _errorMessage = 'Failed to fetch club profile: $e';
       notifyListeners();
     }
   }
@@ -62,10 +77,13 @@ class ClubProfileProvider with ChangeNotifier {
 
         _currentUser!['email'] = newEmail;
         notifyListeners();
+      } else {
+        throw Exception('Current user is not set');
       }
     } catch (e) {
-      print('Error updating email: $e');
-      rethrow;
+      _errorMessage = 'Error updating email: $e';
+      notifyListeners();
+      throw Exception(_errorMessage);
     }
   }
 
@@ -90,11 +108,52 @@ class ClubProfileProvider with ChangeNotifier {
         } else {
           throw Exception('Current password is incorrect');
         }
+      } else {
+        throw Exception('Current user is not set');
       }
     } catch (e) {
-      print('Error updating password: $e');
-      rethrow;
+      _errorMessage = 'Error updating password: $e';
+      notifyListeners();
+      throw Exception(_errorMessage);
+    }
+  }
+
+  Future<void> addMember(String name, String email) async {
+    try {
+      final newMember = await _supabase
+          .from('club_members')
+          .insert({
+        'name': name,
+        'email': email,
+        'club_id': _currentUser!['club_id']
+      })
+          .select()
+          .single();
+
+      _clubMembers.add(newMember);
+      _memberCount++;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = 'Error adding member: $e';
+      notifyListeners();
+      throw Exception(_errorMessage);
+    }
+  }
+
+  Future<void> removeMember(String memberId) async {
+    try {
+      await _supabase
+          .from('club_members')
+          .delete()
+          .eq('id', memberId);
+
+      _clubMembers.removeWhere((member) => member['id'] == memberId);
+      _memberCount--;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = 'Error removing member: $e';
+      notifyListeners();
+      throw Exception(_errorMessage);
     }
   }
 }
-
