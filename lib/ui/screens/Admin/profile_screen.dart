@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mit_event/ui/screens/Admin/setting_screen.dart';
 import 'package:mit_event/ui/widgets/custom_button.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/providers/club_profile_provider.dart';
 import '../../../core/providers/login_provider.dart';
 import '../../../utils/app_colors.dart';
@@ -16,7 +17,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch club profile data after the widget is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final loginProvider = Provider.of<LoginProvider>(context, listen: false);
       final clubId = loginProvider.clubId;
@@ -26,7 +26,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .fetchClubProfile(clubId, loggedInUserId);
       }
     });
-
   }
 
   @override
@@ -54,46 +53,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: Consumer<ClubProfileProvider>(
         builder: (context, profileProvider, _) {
-          if (profileProvider.isLoading) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          if (profileProvider.errorMessage != null) {
-            return Center(child: Text('Error: ${profileProvider.errorMessage}'));
-          }
-
-          if (clubId == null) {
-            return Center(child: Text('No club ID found. Please log in.'));
-          }
-
-          if (profileProvider.clubName.isEmpty) {
-            return Center(child: Text('No data available for this club.'));
-          }
-
           return RefreshIndicator(
-            onRefresh: () {
-              final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+            onRefresh: () async {
               final loggedInUserId = loginProvider.loggedInUserId;
-              if (loggedInUserId != null) {
-                return profileProvider.fetchClubProfile(clubId, loggedInUserId);
-              } else {
-                // Return a completed Future if loggedInUserId is null
-                return Future.value();
+              if (clubId != null && loggedInUserId != null) {
+                await profileProvider.fetchClubProfile(clubId, loggedInUserId);
               }
             },
             child: _buildProfileContent(profileProvider, context),
           );
-
         },
       ),
     );
   }
 
   Widget _buildProfileContent(ClubProfileProvider profileProvider, BuildContext context) {
+    final isLoading = profileProvider.isLoading;
+
     return SingleChildScrollView(
       physics: AlwaysScrollableScrollPhysics(),
       child: Column(
         children: [
+          // Header Section with Shimmer Effect
           Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,
@@ -109,7 +90,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   child: Center(
-                    child: Text(
+                    child: isLoading
+                        ? Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        height: 40,
+                        width: 200,
+                        color: Colors.white,
+                      ),
+                    )
+                        : Text(
                       profileProvider.clubName,
                       style: TextStyle(
                         fontSize: 60,
@@ -129,7 +120,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               Positioned(
                 bottom: -40,
-                child: CircleAvatar(
+                child: isLoading
+                    ? Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.grey[300],
+                  ),
+                )
+                    : CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.lightBlue[100],
                   child: Text(
@@ -143,72 +143,103 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           SizedBox(height: 50),
-          Text(
-            profileProvider.currentUser?['name'] ?? 'User',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 4),
-          Text(
-            profileProvider.currentUser?['email'] ?? 'xyz@gmail.com',
-            style: TextStyle(fontSize: 18, color: Colors.grey[500]),
-          ),
-          SizedBox(height: 15),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+          // Profile Info Section with Shimmer
+          isLoading
+              ? _buildShimmerProfile()
+              : Column(
+            children: [
+              Text(
+                profileProvider.currentUser?['name'] ?? 'User',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 4),
+              Text(
+                profileProvider.currentUser?['email'] ?? 'xyz@gmail.com',
+                style: TextStyle(fontSize: 18, color: Colors.grey[500]),
+              ),
+              SizedBox(height: 15),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Club Members', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    CustomButton(
-                      title: 'Add Member',
-                      onPressed: () {
-                        // TODO: Implement add member functionality
-                      },
-                      icon: Icons.add,
-                      color_1: Colors.blue[900]!,
-                      color_2: Colors.blue[300]!,
-                    )
-                  ],
-                ),
-                SizedBox(height: 20),
-                Column(
-                  children: profileProvider.clubMembers.map((member) {
-                    return Card(
-                      margin: EdgeInsets.only(right: 15, left: 15, bottom: 10),
-                      color: AppColors.card,
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.lightBlue[100],
-                          child: Text(
-                            member['name'][0].toUpperCase(),
-                            style: TextStyle(fontSize: 20, color: Colors.blue),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Club Members',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold)),
+                        CustomButton(
+                          title: 'Add Member',
+                          onPressed: () {
+                            // TODO: Implement add member functionality
+                          },
+                          icon: Icons.add,
+                          color_1: Colors.blue[900]!,
+                          color_2: Colors.blue[300]!,
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 20),
+
+                    // Club Members List
+                    ...profileProvider.clubMembers.map((member) {
+                      return Card(
+                        margin: EdgeInsets.only(right: 15, left: 15, bottom: 10),
+                        color: AppColors.card,
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.lightBlue[100],
+                            child: Text(
+                              member['name'][0].toUpperCase(),
+                              style: TextStyle(fontSize: 20, color: Colors.blue),
+                            ),
+                          ),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(member['name']),
+                              Text(member['email'], style: TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            onPressed: () {
+                              // TODO: Implement remove member functionality
+                            },
+                            icon: Icon(Icons.delete, color: Colors.red[700]),
                           ),
                         ),
-                        title: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(member['name']),
-                            Text(member['email'], style: TextStyle(fontSize: 12)),
-                          ],
-                        ),
-                        trailing: IconButton(
-                          onPressed: () {
-                            // TODO: Implement remove member functionality
-                          },
-                          icon: Icon(Icons.delete, color: Colors.red[700]),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  // Shimmer Placeholder for Profile Info
+  Widget _buildShimmerProfile() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: List.generate(3, (index) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              height: 20,
+              margin: EdgeInsets.symmetric(vertical: 8),
+              width: index == 0 ? 150 : double.infinity,
+              color: Colors.white,
+            ),
+          );
+        }),
       ),
     );
   }

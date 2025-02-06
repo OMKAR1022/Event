@@ -5,6 +5,7 @@ class EventRegistrationProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   bool _isSuccess = false;
+  Map<String, bool> _registrationStatus = {};
 
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -14,6 +15,12 @@ class EventRegistrationProvider with ChangeNotifier {
     required int eventId,
     required String studentId,
   }) async {
+    if (studentId.isEmpty) {
+      _error = 'Student ID is empty';
+      notifyListeners();
+      return;
+    }
+
     print('Starting registration process for event $eventId');
     try {
       _isLoading = true;
@@ -44,6 +51,7 @@ class EventRegistrationProvider with ChangeNotifier {
       });
 
       _isSuccess = true;
+      _registrationStatus['$eventId-$studentId'] = true;
       _isLoading = false;
       notifyListeners();
       print('Registration process completed. Success: $_isSuccess, Error: $_error');
@@ -58,6 +66,16 @@ class EventRegistrationProvider with ChangeNotifier {
   }
 
   Future<bool> isStudentRegistered({required int eventId, required String studentId}) async {
+    if (studentId.isEmpty) {
+      print('Student ID is empty');
+      return false;
+    }
+
+    final cacheKey = '$eventId-$studentId';
+    if (_registrationStatus.containsKey(cacheKey)) {
+      return _registrationStatus[cacheKey]!;
+    }
+
     try {
       final supabase = Supabase.instance.client;
       final existingRegistrations = await supabase
@@ -66,7 +84,10 @@ class EventRegistrationProvider with ChangeNotifier {
           .eq('event_id', eventId)
           .eq('student_id', studentId);
 
-      return existingRegistrations.isNotEmpty;
+      final isRegistered = existingRegistrations.isNotEmpty;
+      _registrationStatus[cacheKey] = isRegistered;
+      notifyListeners();
+      return isRegistered;
     } catch (error) {
       print('Error checking student registration: $error');
       return false;
@@ -77,6 +98,8 @@ class EventRegistrationProvider with ChangeNotifier {
     _isLoading = false;
     _error = null;
     _isSuccess = false;
+    _registrationStatus.clear();
     notifyListeners();
   }
 }
+

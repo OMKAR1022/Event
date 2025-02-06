@@ -1,4 +1,3 @@
-// event_info_card.dart
 import 'package:flutter/material.dart';
 
 class EventInfoCard extends StatelessWidget {
@@ -19,6 +18,7 @@ class EventInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return IntrinsicHeight(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start, // Fixes alignment issues
         children: [
           // Date Column
           Column(
@@ -35,9 +35,9 @@ class EventInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(width: 8),
+
           VerticalDivider(color: Colors.grey),
-          SizedBox(width: 8),
+
           // Time Column
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -61,23 +61,28 @@ class EventInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(width: 8),
+
           VerticalDivider(color: Colors.grey),
-          SizedBox(width: 8),
           // Venue Column
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                venue,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Venue',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
+          Flexible(  // This allows the venue to adjust its width
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center, // Align text properly
+              children: [
+                Text(
+                  venue,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis, // Allow text to wrap
+                  softWrap: true,                   // Enable wrapping
+                  maxLines: 2,                      // Limit to 2 lines
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Venue',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
           ),
         ],
       ),

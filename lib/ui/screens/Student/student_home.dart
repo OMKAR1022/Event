@@ -175,7 +175,7 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
                           selectedIndex: _selectedIndex,
                           onCategorySelected: (index) {
                             setState(() => _selectedIndex = index);
-                        /*    _animationController.reset();
+                            /*    _animationController.reset();
                             _animationController.forward();*/
                           },
                         ),
@@ -202,4 +202,3 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
     );
   }
 }
-

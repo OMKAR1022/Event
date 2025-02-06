@@ -118,4 +118,3 @@ class _MyEventsPageState extends State<MyEventsPage> {
     );
   }
 }
-

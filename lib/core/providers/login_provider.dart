@@ -18,6 +18,22 @@ class LoginProvider with ChangeNotifier {
   String? get loggedInUserId => _loggedInUserId;
   String? get studentName => _studentName;
 
+
+  Future<bool> isEmailRegistered(String email) async {
+    try {
+      final response = await _supabase
+          .from('club_members')
+          .select('email')
+          .eq('email', email)
+          .maybeSingle();
+
+      return response != null;
+    } catch (e) {
+      print('Error checking email registration: $e');
+      return false;
+    }
+  }
+
   Future<void> login(String username, String password, BuildContext context) async {
     try {
       final supabase = Supabase.instance.client;
@@ -138,4 +154,3 @@ class LoginProvider with ChangeNotifier {
     Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
   }
 }
-

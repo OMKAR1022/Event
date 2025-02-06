@@ -14,13 +14,14 @@ class SearchBar_student extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: ScreenSize.height(context,20),
+      height: ScreenSize.height(context,17),
+      width: ScreenSize.width(context,1),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
         border: Border.all(color: Colors.grey[300]!),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5)),
+          BoxShadow(color: Colors.black12, blurRadius: 1, offset: Offset(-2, 2)),
         ],
       ),
       child: Theme(
@@ -43,7 +44,7 @@ class SearchBar_student extends StatelessWidget {
               fontSize: 16,
               fontWeight: FontWeight.w400,
             ),
-            prefixIcon: Icon(Icons.search, color: Colors.blueGrey),
+            prefixIcon: Icon(Icons.search, color: Colors.blue),
             suffixIcon: controller.text.isNotEmpty
                 ? IconButton(
               icon: Icon(

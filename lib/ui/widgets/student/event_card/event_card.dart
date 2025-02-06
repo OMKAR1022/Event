@@ -10,7 +10,6 @@ import 'event_card_details.dart';
 import 'event_card_registration.dart';
 import 'confirmation_dialog.dart';
 
-
 class EventCard extends StatelessWidget {
   final String title;
   final String date;
@@ -93,19 +92,26 @@ class EventCard extends StatelessWidget {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'Active':
-        return Colors.green;
+        return Colors.teal;
       case 'Full':
-        return Colors.orange;
+        return Colors.orange[700]!;
       case 'Registration Closed':
-        return Colors.orange;
+        return Colors.orange[400]!;
       case 'Completed':
-        return Colors.red;
+        return Colors.red[700]!;
       default:
         return Colors.grey;
     }
   }
 
-  Future<void> _handleRegistration(BuildContext context) async {
+  Future<void> _handleRegistration(BuildContext context, EventRegistrationProvider provider) async {
+    if (currentStudentId == null || currentStudentId!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: Student ID not found. Please log in again.')),
+      );
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => ConfirmationDialog(
@@ -114,20 +120,28 @@ class EventCard extends StatelessWidget {
       ),
     );
 
-    if (confirmed == true && currentStudentId != null) {
+    if (confirmed == true) {
       try {
-        await Provider.of<EventRegistrationProvider>(context, listen: false)
-            .registerForEvent(
+        await provider.registerForEvent(
           eventId: id,
           studentId: currentStudentId!,
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Successfully registered for the event!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (provider.isSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully registered for the event!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else if (provider.error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(provider.error!),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -163,193 +177,202 @@ class EventCard extends StatelessWidget {
     final status = _getEventStatus();
     final statusColor = _getStatusColor(status);
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 2,
-            offset: Offset(-2, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (imageUrl.isNotEmpty)
-            GestureDetector(
-              onTap: onImageTap,
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                child: Hero(
-                  tag: 'event_image_$id',
-                  child: NetworkAwareImage(
-                    imageUrl: imageUrl,
-                    width: ScreenSize.width(context),
-                    height: ScreenSize.height(context, 4),
-                  ),
-                ),
+    return Consumer<EventRegistrationProvider>(
+      builder: (context, registrationProvider, child) {
+        return Container(
+          margin: EdgeInsets.only(bottom: 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 2,
+                offset: Offset(-2, 2),
               ),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (imageUrl.isNotEmpty)
+                GestureDetector(
+                  onTap: onImageTap,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    child: Hero(
+                      tag: 'event_image_$id',
+                      child: NetworkAwareImage(
+                        imageUrl: imageUrl,
+                        width: ScreenSize.width(context),
+                        height: ScreenSize.height(context, 4),
                       ),
                     ),
-                    SizedBox(width: 8),
-                    _buildStatusBadge(status),
-                  ],
-                ),
-                SizedBox(height: 8),
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(fontSize: 14),
-                    children: [
-                      TextSpan(
-                        text: 'Organized by : ',
-                        style: TextStyle(
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      TextSpan(
-                        text: clubName,
-                        style: TextStyle(
-                          color: Colors.blue[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  _limitDescription(description),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 10,
-                ),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    _buildInfoChip(Icons.calendar_today_outlined, formattedDate),
-                    SizedBox(width: 12),
-                    _buildInfoChip(Icons.access_time_outlined, formattedTime),
-                  ],
-                ),
-                SizedBox(height: 12),
-                _buildInfoChip(Icons.location_on_outlined, venue),
-                SizedBox(height: 16),
-                Column(
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '$registrations Registered',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
-                        Text(
-                          '$maxParticipants Slots',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        SizedBox(width: 8),
+                        _buildStatusBadge(status),
                       ],
                     ),
                     SizedBox(height: 8),
-                    Stack(
-                      children: [
-                        Container(
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        FractionallySizedBox(
-                          widthFactor: registrations / maxParticipants,
-                          child: Container(
-                            height: 8,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.blue[400]!, Colors.blue[600]!],
-                              ),
-                              borderRadius: BorderRadius.circular(4),
+                    RichText(
+                      text: TextSpan(
+                        style: TextStyle(fontSize: 14),
+                        children: [
+                          TextSpan(
+                            text: 'Organized by : ',
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
+                          TextSpan(
+                            text: clubName,
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              color: Colors.blue[700],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      _limitDescription(description),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 10,
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      children: [
+                        _buildInfoChip(Icons.calendar_today_outlined, formattedDate),
+                        SizedBox(width: 12),
+                        _buildInfoChip(Icons.access_time_outlined, formattedTime),
+                      ],
+                    ),
+                    SizedBox(height: 12),
+                    _buildInfoChip(Icons.location_on_outlined, venue),
+                    SizedBox(height: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '$registrations Registered',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              '$maxParticipants Slots',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Stack(
+                          children: [
+                            Container(
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            FractionallySizedBox(
+                              widthFactor: registrations / maxParticipants,
+                              child: Container(
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.blue[400]!, Colors.blue[600]!],
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        FutureBuilder<bool>(
+                          future: registrationProvider.isStudentRegistered(
+                            eventId: id,
+                            studentId: currentStudentId ?? '',
+
+                          ),
+                          builder: (context, snapshot) {
+                            final isRegistered = snapshot.data ?? false;
+                            return SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: (status == 'Active' && !isRegistered)
+                                    ? () => _handleRegistration(context, registrationProvider)
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isRegistered ? Colors.grey[300] : Colors.blue[900],
+                                  padding: EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: status == 'Active' && !isRegistered ? 2 : 0,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: Text(
+                                  isRegistered
+                                      ? 'Already Registered'
+                                      : status == 'Active'
+                                      ? 'Register Now'
+                                      : 'Registration Closed',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
-                    FutureBuilder<bool>(
-                      future: Provider.of<EventRegistrationProvider>(context, listen: false)
-                          .isStudentRegistered(eventId: id, studentId: currentStudentId ?? ''),
-                      builder: (context, snapshot) {
-                        final isRegistered = snapshot.data ?? false;
-                        return SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: (status == 'Active' && !isRegistered)
-                                ? () => _handleRegistration(context)
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isRegistered ? Colors.grey[300] : Colors.blue[900],
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: status == 'Active' && !isRegistered ? 2 : 0,
-                              foregroundColor: Colors.white, // Text color
-                            ),
-                            child: Text(
-                              isRegistered
-                                  ? 'Already Registered'
-                                  : status == 'Active'
-                                  ? 'Register Now'
-                                  : 'Registration Closed',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -382,19 +405,19 @@ class EventCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color:  _getStatusColor(status),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2,
-            offset: Offset(-2, 2)
-          )
-        ]
+          color:  _getStatusColor(status),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey[200]!,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black26,
+                blurRadius: 2,
+                offset: Offset(-2, 2)
+            )
+          ]
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -416,7 +439,5 @@ class EventCard extends StatelessWidget {
       ),
     );
   }
-
-
 }
 
