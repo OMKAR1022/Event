@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/providers/login_provider.dart';
 import '../../screens/Student/my_events_page.dart';
+import '../confirmation_dialog.dart';
 
 class StudentDrawer extends StatelessWidget {
   final String? studentName;
@@ -55,19 +56,17 @@ class StudentDrawer extends StatelessWidget {
                       },
                     ),
                     _buildMenuItem(
-                      icon: Icons.lock_outline,
-                      title: 'Change Password',
+                      icon: Icons.notifications_outlined,
+                      title: 'Notifications',
                       onTap: () {
-                        // TODO: Navigate to change password page
-                        Navigator.pop(context);
+                        // Navigate to notifications page
                       },
                     ),
                     _buildMenuItem(
-                      icon: Icons.settings_outlined,
-                      title: 'Change Email',
+                      icon: Icons.security_outlined,
+                      title: 'Security & Privacy',
                       onTap: () {
-                        // TODO: Navigate to settings page
-                        Navigator.pop(context);
+
                       },
                     ),
                     _buildMenuItem(
@@ -166,7 +165,7 @@ class StudentDrawer extends StatelessWidget {
           'Logout',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
-        onPressed: () => _showLogoutConfirmationDialog(context),
+        onPressed: () =>showLogoutConfirmationDialog(context),
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.blue[800], backgroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 16),
@@ -203,31 +202,23 @@ class StudentDrawer extends StatelessWidget {
     );
   }
 
-  void _showLogoutConfirmationDialog(BuildContext context) {
+  void showLogoutConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirm Logout'),
-          content: Text('Are you sure you want to logout?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Logout'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Provider.of<LoginProvider>(context, listen: false).logout(context);
-              },
-            ),
-          ],
+        return ConfirmationDialog(
+          title: 'Confirm Logout',
+          content: 'Are you sure you want to logout?',
+          confirmText: 'Logout',
+          cancelText: 'Cancel',
+          onConfirm: () {
+            Provider.of<LoginProvider>(context, listen: false).logout(context);
+          },
         );
       },
     );
   }
+
 }
+
 

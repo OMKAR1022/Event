@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mit_event/utils/app_colors.dart';
 
 class FilterTabs extends StatelessWidget {
   final List<String> categories;
@@ -16,7 +17,7 @@ class FilterTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height:35,
-      margin: EdgeInsets.symmetric(vertical: 16),
+      margin: EdgeInsets.only(bottom: 15),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
@@ -43,7 +44,7 @@ class FilterTabs extends StatelessWidget {
                     color: isSelected
                         ? Colors.blue[300]!.withOpacity(0.3)
                         : Colors.grey[300]!,
-                    blurRadius: 2,
+                    blurRadius: 1,
                     offset: Offset(-1, 1),
                   ),
                 ],

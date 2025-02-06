@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        initialRoute: AppRoutes.login,
+        initialRoute: AppRoutes.login, // Changed from AppRoutes.login to AppRoutes.splash
         routes: AppRoutes.getRoutes(),
       ),
     );

@@ -93,13 +93,13 @@ class StudentAppBar extends StatelessWidget {
         builder: (context, provider, child) {
           if (!provider.hasUnreadNotifications) return SizedBox.shrink();
           return Positioned(
-            right: 8,
+            right: 14,
             top: 8,
             child: Container(
-              width: ScreenSize.width(context,12),
-              height: ScreenSize.height(context,12),
+              width: ScreenSize.width(context,40),
+              height: ScreenSize.height(context,40),
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: Colors.red[700]!,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
