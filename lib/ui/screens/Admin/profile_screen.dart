@@ -6,7 +6,6 @@ import 'package:shimmer/shimmer.dart';
 import '../../../core/providers/club_profile_provider.dart';
 import '../../../core/providers/login_provider.dart';
 import '../../../utils/app_colors.dart';
-import '../../widgets/wave_clipper.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -30,190 +29,177 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    final clubId = loginProvider.clubId;
-
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        centerTitle: false,
-        backgroundColor: AppColors.background,
-        title: Text('Club Profile'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SettingsScreen()),
-              );
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.grey[100],
       body: Consumer<ClubProfileProvider>(
         builder: (context, profileProvider, _) {
           return RefreshIndicator(
             onRefresh: () async {
+              final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+              final clubId = loginProvider.clubId;
               final loggedInUserId = loginProvider.loggedInUserId;
               if (clubId != null && loggedInUserId != null) {
                 await profileProvider.fetchClubProfile(clubId, loggedInUserId);
               }
             },
-            child: _buildProfileContent(profileProvider, context),
+            child: SingleChildScrollView(
+              physics: AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  _buildHeader(profileProvider),
+                  _buildProfileInfo(profileProvider),
+                  _buildMembersList(profileProvider),
+                ],
+              ),
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _buildProfileContent(ClubProfileProvider profileProvider, BuildContext context) {
-    final isLoading = profileProvider.isLoading;
-
-    return SingleChildScrollView(
-      physics: AlwaysScrollableScrollPhysics(),
-      child: Column(
-        children: [
-          // Header Section with Shimmer Effect
-          Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
+  Widget _buildHeader(ClubProfileProvider profileProvider) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.blue[800]!, Colors.blue[400]!],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              ClipPath(
-                clipper: WaveClipper(),
-                child: Container(
-                  height: 180,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue[900]!, Colors.blue[200]!],
-                    ),
-                  ),
-                  child: Center(
-                    child: isLoading
-                        ? Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(
-                        height: 40,
-                        width: 200,
-                        color: Colors.white,
-                      ),
-                    )
-                        : Text(
-                      profileProvider.clubName,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Club Profile',
                       style: TextStyle(
-                        fontSize: 60,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black38,
-                            blurRadius: 2,
-                            offset: Offset(-3, 3),
-                          )
-                        ],
                       ),
                     ),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: -40,
-                child: isLoading
-                    ? Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.grey[300],
-                  ),
-                )
-                    : CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.lightBlue[100],
-                  child: Text(
-                    profileProvider.currentUser?['name'] != null
-                        ? profileProvider.currentUser!['name'][0].toUpperCase()
-                        : 'A',
-                    style: TextStyle(fontSize: 40, color: Colors.blue),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 50),
-
-          // Profile Info Section with Shimmer
-          isLoading
-              ? _buildShimmerProfile()
-              : Column(
-            children: [
-              Text(
-                profileProvider.currentUser?['name'] ?? 'User',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 4),
-              Text(
-                profileProvider.currentUser?['email'] ?? 'xyz@gmail.com',
-                style: TextStyle(fontSize: 18, color: Colors.grey[500]),
-              ),
-              SizedBox(height: 15),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Club Members',
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold)),
-                        CustomButton(
-                          title: 'Add Member',
-                          onPressed: () {
-                            // TODO: Implement add member functionality
-                          },
-                          icon: Icons.add,
-                          color_1: Colors.blue[900]!,
-                          color_2: Colors.blue[300]!,
-                        )
-                      ],
+                    IconButton(
+                      icon: Icon(Icons.settings, color: Colors.white),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SettingsScreen()),
+                      ),
                     ),
-                    SizedBox(height: 20),
-
-                    // Club Members List
-                    ...profileProvider.clubMembers.map((member) {
-                      return Card(
-                        margin: EdgeInsets.only(right: 15, left: 15, bottom: 10),
-                        color: AppColors.card,
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.lightBlue[100],
-                            child: Text(
-                              member['name'][0].toUpperCase(),
-                              style: TextStyle(fontSize: 20, color: Colors.blue),
-                            ),
-                          ),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(member['name']),
-                              Text(member['email'], style: TextStyle(fontSize: 12)),
-                            ],
-                          ),
-                          trailing: IconButton(
-                            onPressed: () {
-                              // TODO: Implement remove member functionality
-                            },
-                            icon: Icon(Icons.delete, color: Colors.red[700]),
-                          ),
-                        ),
-                      );
-                    }).toList(),
                   ],
                 ),
+              ),
+              SizedBox(height: 20),
+              _buildProfileHeader(profileProvider),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(ClubProfileProvider profileProvider) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: CircleAvatar(
+              radius: 45,
+              backgroundColor: Colors.white,
+              child: Text(
+                profileProvider.currentUser?['name'] != null
+                    ? profileProvider.currentUser!['name'][0].toUpperCase()
+                    : 'A',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[800],
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+          Text(
+            profileProvider.clubName,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            profileProvider.currentUser?['email'] ?? 'xyz@gmail.com',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.9),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileInfo(ClubProfileProvider profileProvider) {
+    return Container(
+      margin: EdgeInsets.all(16),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Club Statistics',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatItem(
+                icon: Icons.people,
+                label: 'Members',
+                value: profileProvider.clubMembers.length.toString(),
+              ),
+              _buildStatItem(
+                icon: Icons.event,
+                label: 'Events',
+                value: '0', // Add actual events count
+              ),
+              _buildStatItem(
+                icon: Icons.star,
+                label: 'Rating',
+                value: '4.5', // Add actual rating
               ),
             ],
           ),
@@ -222,24 +208,134 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Shimmer Placeholder for Profile Info
-  Widget _buildShimmerProfile() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+  Widget _buildStatItem({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.blue[800], size: 24),
+        ),
+        SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMembersList(ClubProfileProvider profileProvider) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: List.generate(3, (index) {
-          return Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
-            child: Container(
-              height: 20,
-              margin: EdgeInsets.symmetric(vertical: 8),
-              width: index == 0 ? 150 : double.infinity,
-              color: Colors.white,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Club Members',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                CustomButton(
+                  title: 'Add Member',
+                  onPressed: () {
+                    // TODO: Implement add member functionality
+                  },
+                  icon: Icons.add,
+                  color_1: Colors.blue[800]!,
+                  color_2: Colors.blue[600]!,
+                ),
+              ],
             ),
-          );
-        }),
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: profileProvider.clubMembers.length,
+            itemBuilder: (context, index) {
+              final member = profileProvider.clubMembers[index];
+              return _buildMemberTile(member);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMemberTile(Map<String, dynamic> member) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: Colors.blue.withOpacity(0.1),
+          child: Text(
+            member['name'][0].toUpperCase(),
+            style: TextStyle(
+              color: Colors.blue[800],
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        title: Text(
+          member['name'],
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Text(
+          member['email'],
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 12,
+          ),
+        ),
+        trailing: IconButton(
+          icon: Icon(Icons.delete, color: Colors.red[400]),
+          onPressed: () {
+            // TODO: Implement remove member functionality
+          },
+        ),
       ),
     );
   }

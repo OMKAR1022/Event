@@ -15,7 +15,6 @@ import '../../widgets/student/student_drawer.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../utils/network_utils.dart';
 
-
 class StudentHome extends StatefulWidget {
   final String? currentStudentId;
   final String? studentName;
@@ -148,7 +147,6 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
                     await Provider.of<StudentEventProvider>(context, listen: false).fetchAllEvents();
                   },
                   child: CustomScrollView(
-
                     slivers: [
                       SliverToBoxAdapter(
                         child: Container(
@@ -175,12 +173,9 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
                           selectedIndex: _selectedIndex,
                           onCategorySelected: (index) {
                             setState(() => _selectedIndex = index);
-                            /*    _animationController.reset();
-                            _animationController.forward();*/
                           },
                         ),
                       ),
-
                       EventList(
                         selectedCategory: _categories[_selectedIndex],
                         searchQuery: _searchQuery,
@@ -202,3 +197,4 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
     );
   }
 }
+

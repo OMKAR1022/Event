@@ -9,93 +9,107 @@ import 'package:provider/provider.dart';
 import '../../widgets/confirmation_dialog.dart';
 import 'help_support_page.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
+  @override
+  _SettingsScreenState createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _notificationsEnabled = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         centerTitle: false,
-        title: Text('Settings'),
-        backgroundColor: AppColors.background,
+        title: Text('Settings', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black87),
       ),
-      body: Column( // Use Column to align items vertically
+      body: Column(
         children: [
-          Expanded( // Expand the ListView to fill available space
-            child: Padding(
+          Expanded(
+            child: ListView(
               padding: const EdgeInsets.all(16.0),
-              child: ListView(
-                children: [
-                  _buildSettingItem(
-                    context,
-                    icon: Icons.email,
-                    title: 'Change Email',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ChangeEmailScreen()),
-                      );
-                    },
-                  ),
-                  _buildSettingItem(
-                    context,
-                    icon: Icons.lock,
-                    title: 'Change Password',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ChangePasswordScreen()),
-                      );
-                    },
-                  ),
-                  _buildSettingItem(
-                    context,
-                    icon: Icons.notifications,
-                    title: 'Notification Settings',
-                    onTap: () {
-                      // TODO: Implement notification settings
-                    },
-                  ),
-                  _buildSettingItem(
-                    context,
-                    icon: Icons.language,
-                    title: 'Language',
-                    onTap: () {
-                      // TODO: Implement language settings
-                    },
-                  ),
-                  _buildSettingItem(
-                    context,
-                    icon: Icons.help_outline,
-                    title: 'Help & Support',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => HelpSupportPage()),
-                      );
-                    },
-                  ),
-                  _buildSettingItem(
-                    context,
-                    icon: Icons.info_outline,
-                    title: 'About',
-                    onTap: () {
-                     Navigator.push(context, MaterialPageRoute(builder: (context) =>AboutPage()));
-                    },
-                  ),
-                  _buildSettingItem(
-                    context,
-                    icon: Icons.logout,
-                    title: 'Logout',
-                    onTap: () => showLogoutConfirmationDialog(context),
-                    isLogout: true, // Add this flag
-                  ),
-                ],
-              ),
+              children: [
+                _buildSectionTitle('Account'),
+                _buildSettingItem(
+                  context,
+                  icon: Icons.email,
+                  title: 'Change Email',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ChangeEmailScreen()),
+                    );
+                  },
+                ),
+                _buildSettingItem(
+                  context,
+                  icon: Icons.lock,
+                  title: 'Change Password',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ChangePasswordScreen()),
+                    );
+                  },
+                ),
+                SizedBox(height: 24),
+                _buildSectionTitle('Preferences'),
+                _buildNotificationToggle(),
+                _buildSettingItem(
+                  context,
+                  icon: Icons.language,
+                  title: 'Language',
+                  onTap: () {
+                    // TODO: Implement language settings
+                  },
+                ),
+                SizedBox(height: 24),
+                _buildSectionTitle('Support'),
+                _buildSettingItem(
+                  context,
+                  icon: Icons.help_outline,
+                  title: 'Help & Support',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => HelpSupportPage()),
+                    );
+                  },
+                ),
+                _buildSettingItem(
+                  context,
+                  icon: Icons.info_outline,
+                  title: 'About',
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => AboutPage()));
+                  },
+                ),
+                SizedBox(height: 24),
+                _buildLogoutButton(context),
+              ],
             ),
           ),
-          _buildFooter(), // Footer at the bottom
+          _buildFooter(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, bottom: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey[600],
+        ),
       ),
     );
   }
@@ -103,23 +117,56 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildSettingItem(BuildContext context,
       {required IconData icon,
         required String title,
-        required VoidCallback onTap,
-        bool isLogout = false}) {
+        required VoidCallback onTap}) {
     return Card(
-      color: isLogout ? Colors.redAccent : AppColors.card,
-      elevation: 2,
-      margin: EdgeInsets.symmetric(vertical: 8),
+      color: Colors.white,
+      elevation: 0,
+      margin: EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: Icon(icon, color: isLogout ? Colors.white : Colors.blue),
+        leading: Icon(icon, color: Colors.blue[700]),
         title: Text(title,
-            style: TextStyle(
-                fontSize: 16, color: isLogout ? Colors.white : Colors.black87)),
-        trailing: Icon(Icons.arrow_forward_ios,
-            color: isLogout ? Colors.white : Colors.grey),
+            style: TextStyle(fontSize: 16, color: Colors.black87)),
+        trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 18),
         onTap: onTap,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationToggle() {
+    return Card(
+      color: Colors.white,
+      elevation: 0,
+      margin: EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: SwitchListTile(
+        title: Text('Notifications', style: TextStyle(fontSize: 16, color: Colors.black87)),
+        value: _notificationsEnabled,
+        onChanged: (bool value) {
+          setState(() {
+            _notificationsEnabled = value;
+          });
+          // TODO: Implement notification settings change
+        },
+        secondary: Icon(Icons.notifications, color: Colors.blue[700]),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () => showLogoutConfirmationDialog(context),
+      child: Text('Logout', style: TextStyle(fontSize: 16)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red[700],
+        padding: EdgeInsets.symmetric(vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -129,18 +176,16 @@ class SettingsScreen extends StatelessWidget {
 
   Widget _buildFooter() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 16), // Reduced padding
-      color: AppColors.background, // Background color for the footer
+      padding: EdgeInsets.symmetric(vertical: 16),
+      color: AppColors.background,
       child: Column(
         children: [
-
-          SizedBox(height: 8),
           Text(
             'MIT Event Management',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[700], // Changed color to grey
+              color: Colors.grey[700],
             ),
           ),
           SizedBox(height: 4),
@@ -148,13 +193,14 @@ class SettingsScreen extends StatelessWidget {
             'Version 1.0.0',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500], // Changed color to grey
+              color: Colors.grey[500],
             ),
           ),
         ],
       ),
     );
   }
+
   void showLogoutConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
