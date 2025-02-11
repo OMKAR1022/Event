@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mit_event/utils/app_colors.dart';
 import 'package:provider/provider.dart';
-import '../../../core/providers/club_profile_provider.dart';
+import '../../../../core/providers/club_profile_provider.dart';
 
-import '../../../core/providers/login_provider.dart';
+import '../../../../core/providers/login_provider.dart';
 
 class ChangeEmailScreen extends StatefulWidget {
   @override

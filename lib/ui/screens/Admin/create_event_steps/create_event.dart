@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import '../../../core/providers/event_creation_provider.dart';
-import '../../widgets/progress_header.dart';
-import 'create_event_steps/step_one.dart';
-import 'create_event_steps/step_two.dart';
-import 'create_event_steps/step_three.dart';
-import 'create_event_steps/step_four.dart';
+import '../../../../core/providers/event_creation_provider.dart';
+import '../../../widgets/progress_header.dart';
+import 'step_one.dart';
+import 'step_two.dart';
+import 'step_three.dart';
+import 'step_four.dart';
 
 class CreateEventScreen extends StatefulWidget {
   final String clubId;

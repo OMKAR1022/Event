@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import '../../widgets/category_tabs.dart';
-import '../../widgets/student/search_bar.dart';
-import 'package:mit_event/utils/app_colors.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
-import '../../../core/providers/student_event_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/category_tabs.dart';
 
+import '../../widgets/student/search_bar.dart';
+import '../../../utils/app_colors.dart';
+import '../../../core/providers/student_event_provider.dart';
 import '../../widgets/student/event_list.dart';
 import '../../widgets/student/image_preview.dart';
 import '../../widgets/student/offline_message.dart';
 import '../../widgets/student/student_app_bar.dart';
 import '../../widgets/student/student_drawer.dart';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../utils/network_utils.dart';
+import 'dart:async';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class StudentHome extends StatefulWidget {
   final String? currentStudentId;
@@ -52,7 +53,7 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
     _checkConnectivity();
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen(_updateConnectionStatus);
     _animationController = AnimationController(
-      duration: Duration(milliseconds: 300),
+      duration: Duration(milliseconds: 500),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
@@ -72,6 +73,7 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
   }
 
   void _showImagePreview(String imageUrl) {
+    print("Image tapped with URL: $imageUrl"); // Debugging
     setState(() {
       _previewImageUrl = imageUrl;
     });
@@ -104,11 +106,22 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
   void _showConnectivitySnackBar(bool hasInternet) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          hasInternet ? 'Back online' : 'You are offline. Some features may be limited.',
+        content: Row(
+          children: [
+            Icon(hasInternet ? Icons.wifi : Icons.wifi_off, color: Colors.white),
+            SizedBox(width: 8),
+            Text(
+              hasInternet ? 'Back online' : 'You are offline. Some features may be limited.',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
         ),
         duration: Duration(seconds: 3),
         backgroundColor: hasInternet ? Colors.green : Colors.orange,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }
@@ -117,14 +130,14 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(
-        scaffoldBackgroundColor: Colors.white,
+        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
+        scaffoldBackgroundColor: Colors.grey[100],
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           elevation: 0,
         ),
       ),
       child: Scaffold(
-        backgroundColor: Colors.white,
         drawer: StudentDrawer(
           studentName: widget.studentName,
           enrollmentNo: widget.enrollmentNo,
@@ -150,37 +163,67 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
                     slivers: [
                       SliverToBoxAdapter(
                         child: Container(
-                          color: Colors.white,
-                          padding: const EdgeInsets.all(16.0),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                            ),
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(30),
+                              bottomRight: Radius.circular(30),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
                           child: Column(
                             children: [
-                              StudentAppBar(
-                                studentName: widget.studentName ?? 'Student',
-                                onMenuPressed: () => Scaffold.of(context).openDrawer(),
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: StudentAppBar(
+                                  studentName: widget.studentName ?? 'Student',
+                                  onMenuPressed: () => Scaffold.of(context).openDrawer(),
+                                ),
                               ),
-                              SizedBox(height: 24),
-                              SearchBar_student(
-                                controller: _searchController,
-                                onChanged: (value) => setState(() => _searchQuery = value),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                child: SearchBar_student(
+                                  controller: _searchController,
+                                  onChanged: (value) => setState(() => _searchQuery = value),
+                                ),
                               ),
+                              SizedBox(height: 16),
                             ],
                           ),
                         ),
                       ),
                       SliverToBoxAdapter(
-                        child: FilterTabs(
-                          categories: _categories,
-                          selectedIndex: _selectedIndex,
-                          onCategorySelected: (index) {
-                            setState(() => _selectedIndex = index);
-                          },
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                          child: FilterTabs(
+                            categories: _categories,
+                            selectedIndex: _selectedIndex,
+                            onCategorySelected: (index) {
+                              setState(() => _selectedIndex = index);
+                            },
+                          ),
                         ),
                       ),
-                      EventList(
-                        selectedCategory: _categories[_selectedIndex],
-                        searchQuery: _searchQuery,
-                        currentStudentId: widget.currentStudentId,
-                        onImageTap: _showImagePreview,
+                      SliverPadding(
+                        padding: EdgeInsets.symmetric(horizontal: 0),
+                        sliver: AnimationLimiter(
+                          child: EventList(
+                            selectedCategory: _categories[_selectedIndex],
+                            searchQuery: _searchQuery,
+                            currentStudentId: widget.currentStudentId,
+                            onImageTap: _showImagePreview,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -188,7 +231,7 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
               if (_previewImageUrl != null)
                 ImagePreview(
                   imageUrl: _previewImageUrl!,
-                  onClose: _hideImagePreview,
+                 // onClose: _hideImagePreview,
                 ),
             ],
           ),

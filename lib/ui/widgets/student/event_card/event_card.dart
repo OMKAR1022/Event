@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mit_event/ui/widgets/student/image_preview.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:photo_view/photo_view.dart';
 import '../../../../core/providers/event_registration_provider.dart';
 import '../../../../utils/screen_size.dart';
 import '../../animated_status_dot.dart';
+import '../../confirmation_dialog.dart';
+import '../../event_details_page.dart';
 import '../../network_aware_image.dart';
-import 'event_card_header.dart';
-import 'event_card_details.dart';
-import 'event_card_registration.dart';
-import 'confirmation_dialog.dart';
+import '../../../../core/models/event_model.dart';
 
 class EventCard extends StatelessWidget {
   final String title;
@@ -45,6 +47,8 @@ class EventCard extends StatelessWidget {
     required this.currentStudentId,
     required this.description,
   }) : super(key: key);
+
+
 
   String _getEventStatus() {
     try {
@@ -89,6 +93,7 @@ class EventCard extends StatelessWidget {
     }
   }
 
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'Active':
@@ -116,7 +121,7 @@ class EventCard extends StatelessWidget {
       context: context,
       builder: (BuildContext context) => ConfirmationDialog(
         title: 'Confirm Registration',
-        content: 'Are you sure you want to register for this event?',
+        content: 'Are you sure you want to register for this event?', onConfirm: () {  },
       ),
     );
 
@@ -155,12 +160,15 @@ class EventCard extends StatelessWidget {
 
   String _limitDescription(String description) {
     List<String> words = description.split(' ');
-    if (words.length <= 80) return description;
-    return words.take(80).join(' ') + '...';
+    if (words.length <= 100) return description;
+    return words.take(100).join(' ') + '...';
   }
+
 
   @override
   Widget build(BuildContext context) {
+
+
     String formattedDate = 'N/A';
     String formattedTime = 'N/A';
 
@@ -168,7 +176,7 @@ class EventCard extends StatelessWidget {
       if (date != 'N/A') {
         final eventDate = DateTime.parse(date);
         formattedDate = DateFormat('MMM dd, yyyy').format(eventDate);
-        formattedTime = startTime.substring(0, 5);
+        formattedTime = '${startTime.substring(0, 5)} - ${endTime.substring(0, 5)}';
       }
     } catch (e) {
       print('Error formatting date: $e');
@@ -177,266 +185,383 @@ class EventCard extends StatelessWidget {
     final status = _getEventStatus();
     final statusColor = _getStatusColor(status);
 
+
     return Consumer<EventRegistrationProvider>(
       builder: (context, registrationProvider, child) {
-        return Container(
-          margin: EdgeInsets.only(bottom: 20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 2,
-                offset: Offset(-2, 2),
+        return GestureDetector(
+          onTap: () {
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EventDetailsPage(imageUrl: imageUrl, description: description, title: title,),
+
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (imageUrl.isNotEmpty)
-                GestureDetector(
-                  onTap: onImageTap,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                    child: Hero(
-                      tag: 'event_image_$id',
-                      child: NetworkAwareImage(
-                        imageUrl: imageUrl,
-                        width: ScreenSize.width(context),
-                        height: ScreenSize.height(context, 4),
-                      ),
-                    ),
-                  ),
+            );
+          },
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  offset: Offset(0, 4),
+                  blurRadius: 12,
                 ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  child: Stack(
+                    children: [
+                      NetworkAwareImage(
+                        imageUrl: imageUrl,
+                        width: double.infinity,
+                        height: 150,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.4),
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.4),
+                              ],
                             ),
                           ),
                         ),
-                        SizedBox(width: 8),
-                        _buildStatusBadge(status),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    RichText(
-                      text: TextSpan(
-                        style: TextStyle(fontSize: 14),
-                        children: [
-                          TextSpan(
-                            text: 'Organized by : ',
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              fontWeight: FontWeight.w400,
+                      ),
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 1,
                             ),
                           ),
-                          TextSpan(
-                            text: clubName,
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _getCategoryIcon(),
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                category,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 16,
+                        right: 16,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AnimatedStatusDot(
+                                color: _getStatusColor(status),
+                                isActive: status == 'Active',
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                status,
+                                style: GoogleFonts.poppins(
+                                  color: _getStatusColor(status),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black.withOpacity(0.9),
+                          height: 1.2,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.groups_rounded,
+                              size: 16,
                               color: Colors.blue[700],
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Organized by ',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          Text(
+                            clubName,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
+                              color: Colors.blue[700],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      _limitDescription(description),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 10,
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      children: [
-                        _buildInfoChip(Icons.calendar_today_outlined, formattedDate),
-                        SizedBox(width: 12),
-                        _buildInfoChip(Icons.access_time_outlined, formattedTime),
+                      SizedBox(height: 16),
+                      if (description.isNotEmpty) ...[
+                        Text(maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          _limitDescription(description),
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            color: Colors.grey[700],
+                            height: 1.5
+
+                          ),
+                        ),
+                        SizedBox(height: 20),
                       ],
-                    ),
-                    SizedBox(height: 12),
-                    _buildInfoChip(Icons.location_on_outlined, venue),
-                    SizedBox(height: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.grey[200]!,
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
                           children: [
-                            Text(
-                              '$registrations Registered',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
+                            _buildDetailRow(
+                              Icons.calendar_today_rounded,
+                              'Date',
+                              formattedDate,
                             ),
-                            Text(
-                              '$maxParticipants Slots',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
+                            SizedBox(height: 12),
+                            _buildDetailRow(
+                              Icons.access_time_rounded,
+                              'Time',
+                              formattedTime,
+                            ),
+                            SizedBox(height: 12),
+                            _buildDetailRow(
+                              Icons.location_on_rounded,
+                              'Venue',
+                              venue,
                             ),
                           ],
                         ),
-                        SizedBox(height: 8),
-                        Stack(
-                          children: [
-                            Container(
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(4),
+                      ),
+                      SizedBox(height: 20),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Registration Progress',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[800],
+                                ),
                               ),
-                            ),
-                            FractionallySizedBox(
-                              widthFactor: registrations / maxParticipants,
-                              child: Container(
+                              Text(
+                                '$registrations/$maxParticipants',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.blue[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Stack(
+                            children: [
+                              Container(
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Colors.blue[400]!, Colors.blue[600]!],
-                                  ),
+                                  color: Colors.grey[200],
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 16),
-                        FutureBuilder<bool>(
-                          future: registrationProvider.isStudentRegistered(
-                            eventId: id,
-                            studentId: currentStudentId ?? '',
-
-                          ),
-                          builder: (context, snapshot) {
-                            final isRegistered = snapshot.data ?? false;
-                            return SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: (status == 'Active' && !isRegistered)
-                                    ? () => _handleRegistration(context, registrationProvider)
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isRegistered ? Colors.grey[300] : Colors.blue[900],
-                                  padding: EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: status == 'Active' && !isRegistered ? 2 : 0,
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: Text(
-                                  isRegistered
-                                      ? 'Already Registered'
-                                      : status == 'Active'
-                                      ? 'Register Now'
-                                      : 'Registration Closed',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                              FractionallySizedBox(
+                                widthFactor: registrations / maxParticipants,
+                                child: Container(
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.blue[400]!,
+                                        Colors.blue[600]!,
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
                               ),
-                            );
-                          },
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      FutureBuilder<bool>(
+                        future: registrationProvider.isStudentRegistered(
+                          eventId: id,
+                          studentId: currentStudentId ?? '',
                         ),
-                      ],
-                    ),
-                  ],
+                        builder: (context, snapshot) {
+                          final isRegistered = snapshot.data ?? false;
+                          return SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: (status == 'Active' && !isRegistered)
+                                  ? () => _handleRegistration(context, registrationProvider)
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isRegistered ? Colors.grey[300] : Colors.blue[900],
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: status == 'Active' && !isRegistered ? 2 : 0,
+                                foregroundColor: Colors.white,
+                              ),
+                              child: Text(
+                                isRegistered
+                                    ? 'Already Registered'
+                                    : status == 'Active'
+                                    ? 'Register Now'
+                                    : 'Registration Closed',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: Colors.blue[700]),
-          SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.blue[700],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
+  IconData _getCategoryIcon() {
+    switch (category.toLowerCase()) {
+      case 'academic':
+        return Icons.school_rounded;
+      case 'cultural':
+        return Icons.palette_rounded;
+      case 'sports':
+        return Icons.sports_rounded;
+      case 'workshop':
+        return Icons.build_rounded;
+      default:
+        return Icons.event_rounded;
+    }
   }
 
-  Widget _buildStatusBadge(String status) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-          color:  _getStatusColor(status),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.grey[200]!,
-            width: 1,
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
           ),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black26,
-                blurRadius: 2,
-                offset: Offset(-2, 2)
-            )
-          ]
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedStatusDot(
-            color: Colors.white,
-            isActive: status == 'Active',
+          child: Icon(
+            icon,
+            size: 20,
+            color: Colors.blue[700],
           ),
-          SizedBox(width: 6),
-          Text(
-            status,
-            style: TextStyle(
-              color: Colors.grey[800],
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
+        ),
+        SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
             ),
-          ),
-        ],
-      ),
+            Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

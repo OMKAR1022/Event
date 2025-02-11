@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mit_event/ui/screens/Admin/create_event.dart';
+import 'package:mit_event/ui/screens/Admin/create_event_steps/create_event.dart';
 import 'package:mit_event/ui/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 import 'package:mit_event/ui/widgets/admin/club_event_card.dart';
@@ -10,7 +10,7 @@ import '../../widgets/admin/qr_code_model.dart';
 
 import '../../widgets/custom_bottom_bar.dart';
 import '../../widgets/category_tabs.dart';
-import 'calender_screen.dart';
+
 import 'profile_screen.dart';
 
 import 'package:intl/intl.dart';

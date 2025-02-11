@@ -1,42 +1,49 @@
 import 'package:flutter/material.dart';
-import '../../../utils/screen_size.dart';
-import '../network_aware_image.dart';
 
+import '../network_aware_image.dart';
 
 class ImagePreview extends StatelessWidget {
   final String imageUrl;
-  final VoidCallback onClose;
+  //final VoidCallback onClose;
 
   const ImagePreview({
     Key? key,
     required this.imageUrl,
-    required this.onClose,
+  //  required this.onClose,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onClose,
+     // onTap: onClose,
       child: Container(
         color: Colors.black.withOpacity(0.9),
-        child: Center(
-          child: Stack(
-            alignment: Alignment.topRight,
-            children: [
-              NetworkAwareImage(
-                height: ScreenSize.height(context, 1.5),
-                imageUrl: imageUrl,
-                fit: BoxFit.contain,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: IconButton(
-                  icon: Icon(Icons.close, color: Colors.white),
-                  onPressed: onClose,
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          children: [
+            Center(
+              child: Hero(
+                tag: 'preview_$imageUrl',
+                child: InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 3.0,
+                  child: NetworkAwareImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          /*  Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: Icon(Icons.close, color: Colors.white, size: 30),
+              //  onPressed: onClose,
+              ),
+            ),*/
+          ],
         ),
       ),
     );

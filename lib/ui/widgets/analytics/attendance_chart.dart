@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:mit_event/utils/screen_size.dart';
 import '../../../core/providers/event_analytics_provider.dart';
 
 class AttendanceChart extends StatelessWidget {
@@ -59,7 +60,7 @@ class AttendanceChart extends StatelessWidget {
                       color: Colors.green[400],
                       value: provider.presentStudents.toDouble(),
                       title: '$presentPercentage%',
-                      radius: 130,
+                      radius: 80,
                       titleStyle: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -70,7 +71,7 @@ class AttendanceChart extends StatelessWidget {
                       color: Colors.red[400],
                       value: provider.absentStudents.toDouble(),
                       title: '$absentPercentage%',
-                      radius: 130,
+                      radius: 80,
                       titleStyle: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -99,6 +100,7 @@ class AttendanceChart extends StatelessWidget {
   Widget _buildEmptyState() {
     return Container(
       height: 300,
+      width: 500,
       padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
