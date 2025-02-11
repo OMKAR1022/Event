@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:mit_event/ui/screens/Admin/setting_screen.dart';
+import 'package:mit_event/ui/screens/Admin/setting/setting_screen.dart';
 import 'package:mit_event/ui/widgets/custom_button.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../core/providers/club_profile_provider.dart';

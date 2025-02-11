@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mit_event/core/providers/login_provider.dart';
-import 'package:mit_event/ui/screens/Admin/about_page.dart';
-import 'package:mit_event/ui/screens/Admin/change_email_screen.dart';
-import 'package:mit_event/ui/screens/Admin/change_password_screen.dart';
+import 'package:mit_event/ui/screens/Admin/setting/about_page.dart';
+import 'package:mit_event/ui/screens/Admin/setting/change_email_screen.dart';
+import 'package:mit_event/ui/screens/Admin/setting/change_password_screen.dart';
 import 'package:mit_event/utils/app_colors.dart';
 import 'package:provider/provider.dart';
 
-import '../../widgets/confirmation_dialog.dart';
+import '../../../widgets/confirmation_dialog.dart';
 import 'help_support_page.dart';
 
 class SettingsScreen extends StatefulWidget {

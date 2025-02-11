@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mit_event/utils/app_colors.dart';
 import 'package:provider/provider.dart';
-import '../../../core/providers/club_profile_provider.dart';
+import '../../../../core/providers/club_profile_provider.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   @override

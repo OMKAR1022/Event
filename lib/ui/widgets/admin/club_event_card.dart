@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:mit_event/ui/widgets/custom_button.dart';
 import 'package:mit_event/ui/widgets/event_info.dart';
 
+import '../event_details_page.dart';
+
 class EventCard extends StatelessWidget {
   final String title;
   final String date;
