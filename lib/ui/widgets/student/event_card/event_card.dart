@@ -200,7 +200,7 @@ class EventCard extends StatelessWidget {
             );
           },
           child: Container(
-            margin: EdgeInsets.symmetric(vertical: 12),
+            margin: EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),

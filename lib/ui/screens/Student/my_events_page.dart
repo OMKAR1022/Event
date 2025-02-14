@@ -3,6 +3,9 @@ import 'package:mit_event/utils/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/registered_events_provider.dart';
 import '../../widgets/registered_event_card.dart';
+import '../../widgets/category_tabs.dart';
+
+//enum EventFilter { all, present, absent }
 
 class MyEventsPage extends StatefulWidget {
   final String studentId;
@@ -17,6 +20,9 @@ class MyEventsPage extends StatefulWidget {
 }
 
 class _MyEventsPageState extends State<MyEventsPage> {
+  int _selectedFilterIndex = 0;
+  final List<String> _filterCategories = ['All', 'Present', 'Absent'];
+
   @override
   void initState() {
     super.initState();
@@ -32,7 +38,6 @@ class _MyEventsPageState extends State<MyEventsPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         centerTitle: false,
-
         title: Text(
           'My Events',
           style: TextStyle(
@@ -48,73 +53,120 @@ class _MyEventsPageState extends State<MyEventsPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Consumer<RegisteredEventsProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.purple[200]!),
-              ),
-            );
-          }
-
-          if (provider.registeredEvents.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.event_busy_outlined,
-                    size: 72,
-                    color: Colors.grey[300],
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'No Events Yet',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Register for events to see them here',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Browse Events',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.purple[400],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            itemCount: provider.registeredEvents.length,
-            itemBuilder: (context, index) {
-              final event = provider.registeredEvents[index];
-              return RegisteredEventCard(
-                event: event,
-                studentId: widget.studentId,
-              );
+      body: Column(
+        children: [
+          FilterTabs(
+            categories: _filterCategories,
+            selectedIndex: _selectedFilterIndex,
+            onCategorySelected: (index) {
+              setState(() {
+                _selectedFilterIndex = index;
+              });
             },
-          );
-        },
+          ),
+          Expanded(
+            child: Consumer<RegisteredEventsProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.purple[200]!),
+                    ),
+                  );
+                }
+
+                final filteredEvents = _filterEvents(provider.registeredEvents);
+
+                if (filteredEvents.isEmpty) {
+                  return _buildEmptyState();
+                }
+
+                return ListView.builder(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  itemCount: filteredEvents.length,
+                  itemBuilder: (context, index) {
+                    final event = filteredEvents[index];
+                    return RegisteredEventCard(
+                      event: event,
+                      studentId: widget.studentId,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  List<dynamic> _filterEvents(List<dynamic> events) {
+    switch (_selectedFilterIndex) {
+      case 1: // Present
+        return events.where((event) => event['filter'] == 'present').toList();
+      case 2: // Marked Attendance
+        return events.where((event) => event['filter'] == 'absent').toList();
+      case 0: // All
+      default:
+        return events;
+    }
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.event_busy_outlined,
+            size: 72,
+            color: Colors.grey[300],
+          ),
+          SizedBox(height: 16),
+          Text(
+            'No Events Found',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            _getEmptyStateMessage(),
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Browse Events',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.purple[400],
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getEmptyStateMessage() {
+    switch (_selectedFilterIndex) {
+      case 1: // Present
+        return 'You haven\'t attended any events yet.\nCheck back after attending an event!';
+      case 2: // Marked Attendance
+        return 'No events with marked attendance.\nAttend an event and have your attendance marked!';
+      case 0: // All
+      default:
+        return 'You haven\'t registered for any events yet.\nBrowse and register for events to see them here!';
+    }
+  }
 }
+

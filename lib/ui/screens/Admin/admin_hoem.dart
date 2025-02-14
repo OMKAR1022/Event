@@ -125,7 +125,8 @@ class _AdminHomeState extends State<AdminHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffE9EBEA),
+     // backgroundColor: Color(0xffE9EBEA),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: PageView(
           controller: _pageController,
@@ -152,7 +153,8 @@ class _AdminHomeState extends State<AdminHome> {
   Widget _buildAppBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16.0),
-      color: Color(0xffE9EBEA),
+     // color: Color(0xffE9EBEA),
+      color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -267,6 +269,8 @@ class _AdminHomeState extends State<AdminHome> {
           registrationDeadline: event['registration_deadline'] ?? 'N/A',
           onGenerateQR: (title) => _showQRCodeModal(context, event['id'].toString(), title),
           status: status,
+          imageUrl: event['image_url'] ?? '',
+          description: event['description'] ?? 'No description available.',
           onAnalytics: status == 'Completed' ? () {
             Navigator.push(
               context,

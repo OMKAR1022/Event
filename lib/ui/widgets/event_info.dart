@@ -31,12 +31,12 @@ class EventInfoCard extends StatelessWidget {
               SizedBox(height: 4),
               Text(
                 'Date',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(fontSize: 12, color: Colors.black54),
               ),
             ],
           ),
 
-          VerticalDivider(color: Colors.grey),
+          VerticalDivider(color: Colors.black38),
 
           // Time Column
           Column(
@@ -57,12 +57,12 @@ class EventInfoCard extends StatelessWidget {
               SizedBox(height: 4),
               Text(
                 'Time',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(fontSize: 12, color: Colors.black54),
               ),
             ],
           ),
 
-          VerticalDivider(color: Colors.grey),
+          VerticalDivider(color: Colors.black38),
           // Venue Column
           Flexible(  // This allows the venue to adjust its width
             child: Column(
@@ -79,7 +79,7 @@ class EventInfoCard extends StatelessWidget {
                 SizedBox(height: 4),
                 Text(
                   'Venue',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),
