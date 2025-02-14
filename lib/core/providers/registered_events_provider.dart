@@ -32,6 +32,8 @@ class RegisteredEventsProvider with ChangeNotifier {
               start_time,
               end_time,
               venue,
+              image_url,
+              description,
               clubs (
                 name
               )
@@ -50,6 +52,8 @@ class RegisteredEventsProvider with ChangeNotifier {
           'venue': event['venue'],
           'club_name': event['clubs']['name'],
           'attendance': registration['attendance'],
+          'description': event['description'],
+          'image_url': event['image_url'],
           'filter': registration['attendance'],
 
         };
