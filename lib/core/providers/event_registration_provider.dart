@@ -16,7 +16,7 @@ class EventRegistrationProvider with ChangeNotifier {
     required String studentId,
   }) async {
     if (studentId.isEmpty) {
-      _error = 'Student ID is empty';
+      _error = 'student ID is empty';
       notifyListeners();
       return;
     }
@@ -67,7 +67,7 @@ class EventRegistrationProvider with ChangeNotifier {
 
   Future<bool> isStudentRegistered({required int eventId, required String studentId}) async {
     if (studentId.isEmpty) {
-      print('Student ID is empty');
+      print('student ID is empty');
       return false;
     }
 

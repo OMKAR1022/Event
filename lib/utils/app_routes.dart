@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mit_event/ui/screens/auth/login_screen.dart';
 import 'package:mit_event/ui/screens/Admin/admin_hoem.dart';
 import 'package:mit_event/ui/screens/Student/student_home.dart';
+
+import '../auth/login_screen.dart';
 
 class AppRoutes {
   static const String login = '/login';
