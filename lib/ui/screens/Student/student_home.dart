@@ -138,6 +138,7 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
         ),
       ),
       child: Scaffold(
+        backgroundColor: AppColors.background,
         drawer: StudentDrawer(
           studentName: widget.studentName,
           enrollmentNo: widget.enrollmentNo,
@@ -162,56 +163,33 @@ class _StudentHomeState extends State<StudentHome> with TickerProviderStateMixin
                   child: CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: StudentAppBar(
+                                studentName: widget.studentName ?? 'Student',
+                                onMenuPressed: () => Scaffold.of(context).openDrawer(),
+                              ),
                             ),
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(30),
-                              bottomRight: Radius.circular(30),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+                              child: SearchBar_student(
+                                controller: _searchController,
+                                onChanged: (value) => setState(() => _searchQuery = value),
+                              ),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: StudentAppBar(
-                                  studentName: widget.studentName ?? 'Student',
-                                  onMenuPressed: () => Scaffold.of(context).openDrawer(),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                child: SearchBar_student(
-                                  controller: _searchController,
-                                  onChanged: (value) => setState(() => _searchQuery = value),
-                                ),
-                              ),
-                              SizedBox(height: 16),
-                            ],
-                          ),
+                            SizedBox(height: 15),
+                          ],
                         ),
                       ),
                       SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                          child: FilterTabs(
-                            categories: _categories,
-                            selectedIndex: _selectedIndex,
-                            onCategorySelected: (index) {
-                              setState(() => _selectedIndex = index);
-                            },
-                          ),
+                        child: FilterTabs(
+                          categories: _categories,
+                          selectedIndex: _selectedIndex,
+                          onCategorySelected: (index) {
+                            setState(() => _selectedIndex = index);
+                          },
                         ),
                       ),
                       SliverPadding(

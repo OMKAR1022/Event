@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+enum EventFilter { all, present, markedAttendance }
+
 class RegisteredEventsProvider with ChangeNotifier {
   final _supabase = Supabase.instance.client;
   List<Map<String, dynamic>> _registeredEvents = [];
   bool _isLoading = false;
+  List<Map<String, dynamic>> _filteredEvents = [];
+  EventFilter _currentFilter = EventFilter.all;
 
-  List<Map<String, dynamic>> get registeredEvents => _registeredEvents;
+
+  List<Map<String, dynamic>> get registeredEvents => _filteredEvents;
   bool get isLoading => _isLoading;
+  EventFilter get currentFilter => _currentFilter;
 
   Future<void> fetchRegisteredEvents(String studentId) async {
     try {
@@ -44,6 +50,8 @@ class RegisteredEventsProvider with ChangeNotifier {
           'venue': event['venue'],
           'club_name': event['clubs']['name'],
           'attendance': registration['attendance'],
+          'filter': registration['attendance'],
+
         };
       }).toList();
 
@@ -52,13 +60,33 @@ class RegisteredEventsProvider with ChangeNotifier {
         final dateB = DateTime.parse(b['date']);
         return dateA.compareTo(dateB);
       });
-
+       _applyFilter();
     } catch (e) {
       print('Error fetching registered events: $e');
       _registeredEvents = [];
+      _filteredEvents = [];
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+  void setFilter(EventFilter filter) {
+    _currentFilter = filter;
+    _applyFilter();
+    notifyListeners();
+  }
+
+  void _applyFilter() {
+    switch (_currentFilter) {
+      case EventFilter.all:
+        _filteredEvents = List.from(_registeredEvents);
+        break;
+      case EventFilter.present:
+        _filteredEvents = _registeredEvents.where((event) => event['filter']=='present').toList();
+        break;
+      case EventFilter.markedAttendance:
+        _filteredEvents = _registeredEvents.where((event) => event['filter']=='absent').toList();
+        break;
     }
   }
 

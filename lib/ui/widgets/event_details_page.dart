@@ -18,6 +18,7 @@ class EventDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: false,
         title: Text(
@@ -28,7 +29,7 @@ class EventDetailsPage extends StatelessWidget {
           ),
         ),
         elevation: 0,
-        backgroundColor: Theme.of(context).primaryColor,
+       // backgroundColor: Theme.of(context).primaryColor,
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -37,19 +38,14 @@ class EventDetailsPage extends StatelessWidget {
               Flexible(
                 fit: FlexFit.loose,
                 child: Container(
+                // height: 900,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(20),
                       bottomRight: Radius.circular(20),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
+
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.only(
@@ -58,7 +54,7 @@ class EventDetailsPage extends StatelessWidget {
                     ),
                     child: CachedNetworkImage(
                       imageUrl: imageUrl,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       placeholder: (context, url) => Shimmer.fromColors(
                         baseColor: Colors.grey[300]!,
                         highlightColor: Colors.grey[100]!,
@@ -85,7 +81,7 @@ class EventDetailsPage extends StatelessWidget {
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
+                              blurRadius: 2,
                               offset: Offset(0, 5),
                             ),
                           ],
