@@ -3,13 +3,14 @@ import 'package:provider/provider.dart';
 import '../../../core/providers/student_auth_provider.dart';
 import '../widgets/wave_clipper.dart';
 
-
 class StudentCreateAccountScreen extends StatefulWidget {
   @override
-  _StudentCreateAccountScreenState createState() => _StudentCreateAccountScreenState();
+  _StudentCreateAccountScreenState createState() =>
+      _StudentCreateAccountScreenState();
 }
 
-class _StudentCreateAccountScreenState extends State<StudentCreateAccountScreen> {
+class _StudentCreateAccountScreenState
+    extends State<StudentCreateAccountScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -41,7 +42,8 @@ class _StudentCreateAccountScreenState extends State<StudentCreateAccountScreen>
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        await Provider.of<StudentAuthProvider>(context, listen: false).createAccount(
+        await Provider.of<StudentAuthProvider>(context, listen: false)
+            .createAccount(
           name: _nameController.text,
           phoneNo: _phoneController.text,
           email: _emailController.text,
@@ -105,7 +107,8 @@ class _StudentCreateAccountScreenState extends State<StudentCreateAccountScreen>
                       controller: _nameController,
                       label: 'Full Name',
                       icon: Icons.person,
-                      validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter your name' : null,
                     ),
                     SizedBox(height: 16),
                     _buildTextField(
@@ -113,7 +116,9 @@ class _StudentCreateAccountScreenState extends State<StudentCreateAccountScreen>
                       label: 'Phone Number',
                       icon: Icons.phone,
                       keyboardType: TextInputType.phone,
-                      validator: (value) => value!.isEmpty ? 'Please enter your phone number' : null,
+                      validator: (value) => value!.isEmpty
+                          ? 'Please enter your phone number'
+                          : null,
                     ),
                     SizedBox(height: 16),
                     _buildTextField(
@@ -121,28 +126,36 @@ class _StudentCreateAccountScreenState extends State<StudentCreateAccountScreen>
                       label: 'Email',
                       icon: Icons.email,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) => value!.isEmpty || !value.contains('@') ? 'Please enter a valid email' : null,
+                      validator: (value) =>
+                          value!.isEmpty || !value.contains('@')
+                              ? 'Please enter a valid email'
+                              : null,
                     ),
                     SizedBox(height: 16),
                     _buildTextField(
                       controller: _enrollNoController,
                       label: 'Enrollment Number',
                       icon: Icons.numbers,
-                      validator: (value) => value!.isEmpty ? 'Please enter your enrollment number' : null,
+                      validator: (value) => value!.isEmpty
+                          ? 'Please enter your enrollment number'
+                          : null,
                     ),
                     SizedBox(height: 16),
                     _buildTextField(
                       controller: _departmentController,
                       label: 'Department',
                       icon: Icons.school,
-                      validator: (value) => value!.isEmpty ? 'Please enter your department' : null,
+                      validator: (value) => value!.isEmpty
+                          ? 'Please enter your department'
+                          : null,
                     ),
                     SizedBox(height: 16),
                     _buildTextField(
                       controller: _classController,
                       label: 'Class',
                       icon: Icons.class_,
-                      validator: (value) => value!.isEmpty ? 'Please enter your class' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter your class' : null,
                     ),
                     SizedBox(height: 16),
                     _buildTextField(
@@ -150,10 +163,15 @@ class _StudentCreateAccountScreenState extends State<StudentCreateAccountScreen>
                       label: 'Password',
                       icon: Icons.lock,
                       obscureText: _obscurePassword,
-                      validator: (value) => value!.length < 6 ? 'Password must be at least 6 characters long' : null,
+                      validator: (value) => value!.length < 6
+                          ? 'Password must be at least 6 characters long'
+                          : null,
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        icon: Icon(_obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off),
+                        onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
                       ),
                     ),
                     SizedBox(height: 16),
@@ -162,10 +180,15 @@ class _StudentCreateAccountScreenState extends State<StudentCreateAccountScreen>
                       label: 'Confirm Password',
                       icon: Icons.lock_clock,
                       obscureText: _obscureConfirmPassword,
-                      validator: (value) => value != _passwordController.text ? 'Passwords do not match' : null,
+                      validator: (value) => value != _passwordController.text
+                          ? 'Passwords do not match'
+                          : null,
                       suffixIcon: IconButton(
-                        icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
-                        onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                        icon: Icon(_obscureConfirmPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off),
+                        onPressed: () => setState(() =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword),
                       ),
                     ),
                     SizedBox(height: 24),
@@ -228,4 +251,3 @@ class _StudentCreateAccountScreenState extends State<StudentCreateAccountScreen>
     );
   }
 }
-
