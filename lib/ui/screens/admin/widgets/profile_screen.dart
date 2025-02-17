@@ -196,7 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildStatItem(
                 icon: Icons.event,
                 label: 'Events',
-                value: '0', // Add actual events count
+                value: '3', // Add actual events count
               ),
               _buildStatItem(
                 icon: Icons.star,

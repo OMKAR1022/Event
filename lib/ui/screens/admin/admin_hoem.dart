@@ -124,7 +124,7 @@ class _AdminHomeState extends State<AdminHome> {
   Widget build(BuildContext context) {
     return Scaffold(
      // backgroundColor: Color(0xffE9EBEA),
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF8F9FA),
       body: SafeArea(
         child: PageView(
           controller: _pageController,
@@ -143,7 +143,7 @@ class _AdminHomeState extends State<AdminHome> {
         currentIndex: _currentIndex,
         onTap: (index) {
           _pageController.jumpToPage(index);
-        },
+        }, type: BottomBarType.admin,
       ),
     );
   }
@@ -152,7 +152,7 @@ class _AdminHomeState extends State<AdminHome> {
     return Container(
       padding: const EdgeInsets.all(16.0),
      // color: Color(0xffE9EBEA),
-      color: Colors.white,
+      color: Color(0xFFF8F9FA),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -190,8 +190,8 @@ class _AdminHomeState extends State<AdminHome> {
                Provider.of<EventProvider>(context, listen: false).fetchEvents(widget.clubId);
              },
              icon: Icons.add,
-             color_1: Colors.blue[700]!,
-             color_2: Colors.blue[300]!)
+             color_1: Colors.blue[900]!,
+             color_2: Colors.blue)
         ],
       ),
     );
@@ -279,7 +279,7 @@ class _AdminHomeState extends State<AdminHome> {
                 ),
               ),
             );
-          } : null, venue: event['venue'],
+          } : null, venue: event['venue'], clubname:  widget.clubName,
         );
       },
     );

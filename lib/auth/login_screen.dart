@@ -38,12 +38,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CircleAvatar(
-                      radius: screenWidth * 0.15,
-                      backgroundImage: NetworkImage(
-                        'https://static.toiimg.com/thumb/msid-70529568,width-400,resizemode-4/70529568.jpg',
-                      ),
+                      backgroundColor: Colors.transparent,
+                      radius: screenWidth * 0.2,
+                      backgroundImage: AssetImage('assets/images/event.png')
                     ),
-                    SizedBox(height: screenHeight * 0.02),
+                    SizedBox(height: screenHeight * 0.005),
                     Text(
                       "MIT ADT",
                       style: TextStyle(
