@@ -4,10 +4,8 @@ import 'package:mit_event/utils/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../../../../../core/providers/registered_events_provider.dart';
 import '../../../../../widgets/category_tabs.dart';
-
-
-
-//enum EventFilter { all, present, absent }
+import '../../widget/student_app_bar.dart';
+import '../../widget/student_search_bar.dart';
 
 class MyEventsPage extends StatefulWidget {
   final String studentId;
@@ -24,6 +22,8 @@ class MyEventsPage extends StatefulWidget {
 class _MyEventsPageState extends State<MyEventsPage> {
   int _selectedFilterIndex = 0;
   final List<String> _filterCategories = ['All', 'Present', 'Absent'];
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -35,83 +35,130 @@ class _MyEventsPageState extends State<MyEventsPage> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        centerTitle: false,
-        title: Text(
-          'My Events',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.of(context).pop();
+        return false;
+      },
+      child: Scaffold(
         backgroundColor: Colors.grey[100],
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.black87, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Column(
-        children: [
-          FilterTabs(
-            categories: _filterCategories,
-            selectedIndex: _selectedFilterIndex,
-            onCategorySelected: (index) {
-              setState(() {
-                _selectedFilterIndex = index;
-              });
-            },
-          ),
-          Expanded(
-            child: Consumer<RegisteredEventsProvider>(
+        body: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              floating: false,
+              backgroundColor: Colors.grey[50],
+              elevation: 0,
+              title: Text(
+                'My Events',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              centerTitle: false,
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: SearchBar_student(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(height: 20),
+            ),
+            SliverToBoxAdapter(
+              child: FilterTabs(
+                categories: _filterCategories,
+                selectedIndex: _selectedFilterIndex,
+                onCategorySelected: (index) {
+                  setState(() {
+                    _selectedFilterIndex = index;
+                  });
+                },
+              ),
+            ),
+            Consumer<RegisteredEventsProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.purple[200]!),
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.purple[200]!),
+                      ),
                     ),
                   );
                 }
 
-                final filteredEvents = _filterEvents(provider.registeredEvents);
+                final filteredEvents = _filterAndSearchEvents(provider.registeredEvents);
 
                 if (filteredEvents.isEmpty) {
-                  return _buildEmptyState();
+                  return SliverFillRemaining(
+                    child: _buildEmptyState(),
+                  );
                 }
 
-                return ListView.builder(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  itemCount: filteredEvents.length,
-                  itemBuilder: (context, index) {
-                    final event = filteredEvents[index];
-                    return RegisteredEventCard(
-                      event: event,
-                      studentId: widget.studentId,
-                    );
-                  },
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                      final event = filteredEvents[index];
+                      return RegisteredEventCard(
+                        event: event,
+                        studentId: widget.studentId,
+                      );
+                    },
+                    childCount: filteredEvents.length,
+                  ),
                 );
               },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  List<dynamic> _filterEvents(List<dynamic> events) {
+  List<dynamic> _filterAndSearchEvents(List<dynamic> events) {
+    List<dynamic> filteredEvents = events;
+
+    // Apply category filter
     switch (_selectedFilterIndex) {
       case 1: // Present
-        return events.where((event) => event['filter'] == 'present').toList();
+        filteredEvents = filteredEvents.where((event) => event['filter'] == 'present').toList();
+        break;
       case 2: // Marked Attendance
-        return events.where((event) => event['filter'] == 'absent').toList();
+        filteredEvents = filteredEvents.where((event) => event['filter'] == 'absent').toList();
+        break;
       case 0: // All
       default:
-        return events;
+      // No additional filtering needed
+        break;
     }
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      filteredEvents = filteredEvents.where((event) =>
+      (event['title']?.toLowerCase() ?? '').contains(_searchQuery.toLowerCase()) ||
+          (event['club_name']?.toLowerCase() ?? '').contains(_searchQuery.toLowerCase())
+      ).toList();
+    }
+
+    return filteredEvents;
   }
 
   Widget _buildEmptyState() {
@@ -144,7 +191,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
           ),
           SizedBox(height: 24),
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(context).pop(),
             child: Text(
               'Browse Events',
               style: TextStyle(
@@ -160,6 +207,9 @@ class _MyEventsPageState extends State<MyEventsPage> {
   }
 
   String _getEmptyStateMessage() {
+    if (_searchQuery.isNotEmpty) {
+      return 'No events match your search.\nTry a different search term or clear the search.';
+    }
     switch (_selectedFilterIndex) {
       case 1: // Present
         return 'You haven\'t attended any events yet.\nCheck back after attending an event!';

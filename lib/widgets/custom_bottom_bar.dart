@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
+enum BottomBarType { student, admin }
+
 class CustomBottomBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
+  final BottomBarType type;
 
   const CustomBottomBar({
     Key? key,
     required this.currentIndex,
     required this.onTap,
+    required this.type,
   }) : super(key: key);
 
   @override
@@ -33,21 +37,45 @@ class CustomBottomBar extends StatelessWidget {
         unselectedItemColor: Colors.grey[400],
         selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
-        items: [
+        items: _getBottomBarItems(),
+      ),
+    );
+  }
+
+  List<BottomNavigationBarItem> _getBottomBarItems() {
+    switch (type) {
+      case BottomBarType.student:
+        return [
           _buildBottomNavigationBarItem(
             icon: Icons.home,
             label: 'Home',
             index: 0,
           ),
-
+          _buildBottomNavigationBarItem(
+            icon: Icons.calendar_today,
+            label: 'Events',
+            index: 1,
+          ),
+          _buildBottomNavigationBarItem(
+            icon: Icons.person,
+            label: 'Profile',
+            index: 2,
+          ),
+        ];
+      case BottomBarType.admin:
+        return [
+          _buildBottomNavigationBarItem(
+            icon: Icons.home,
+            label: 'Home',
+            index: 0,
+          ),
           _buildBottomNavigationBarItem(
             icon: Icons.person,
             label: 'Profile',
             index: 1,
           ),
-        ],
-      ),
-    );
+        ];
+    }
   }
 
   BottomNavigationBarItem _buildBottomNavigationBarItem({

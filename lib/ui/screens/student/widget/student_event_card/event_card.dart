@@ -109,44 +109,21 @@ class EventCard extends StatelessWidget {
     }
   }
 
-  Future<void> _handleRegistration(BuildContext context, EventRegistrationProvider provider) async {
-    if (currentStudentId == null || currentStudentId!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: student ID not found. Please log in again.')),
-      );
-      return;
-    }
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => ConfirmationDialog(
-        title: 'Confirm Registration',
-        content: 'Are you sure you want to register for this event?', onConfirm: () {  },
-      ),
-    );
-
-    if (confirmed == true) {
+  Future<void> _handleRegistration(BuildContext context) async {
+    if (currentStudentId != null) {
       try {
-        await provider.registerForEvent(
+        await Provider.of<EventRegistrationProvider>(context, listen: false)
+            .registerForEvent(
           eventId: id,
           studentId: currentStudentId!,
         );
 
-        if (provider.isSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Successfully registered for the event!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        } else if (provider.error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(provider.error!),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully registered for the event!'),
+            backgroundColor: Colors.green,
+          ),
+        );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -157,6 +134,7 @@ class EventCard extends StatelessWidget {
       }
     }
   }
+
 
   String _limitDescription(String description) {
     List<String> words = description.split(' ');
@@ -194,7 +172,7 @@ class EventCard extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => EventDetailsPage(imageUrl: imageUrl, description: description, title: title,),
+                builder: (context) => EventDetailsPage(imageUrl: imageUrl, description: description, title: title, registrations: registrations, club_name: clubName,),
 
               ),
             );
@@ -367,9 +345,9 @@ class EventCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           _limitDescription(description),
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            color: Colors.grey[700],
-                            height: 1.5
+                              fontSize: 15,
+                              color: Colors.grey[700],
+                              height: 1.5
 
                           ),
                         ),
@@ -473,7 +451,7 @@ class EventCard extends StatelessWidget {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: (status == 'Active' && !isRegistered)
-                                  ? () => _handleRegistration(context, registrationProvider)
+                                  ? () => _handleRegistration(context)
                                   : null,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: isRegistered ? Colors.grey[300] : Colors.blue[900],

@@ -164,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildLogoutButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () => showLogoutConfirmationDialog(context),
-      child: Text('Logout', style: TextStyle(fontSize: 16)),
+      child: Text('Logout', style: TextStyle(fontSize: 16,color: Colors.white)),
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.red[700],
         padding: EdgeInsets.symmetric(vertical: 12),

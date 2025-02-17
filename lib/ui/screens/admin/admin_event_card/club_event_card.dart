@@ -19,6 +19,7 @@ class EventCard extends StatelessWidget {
   final String venue;
   final String description;
   final String imageUrl;
+  final String clubname;
 
   const EventCard({
     Key? key,
@@ -34,6 +35,7 @@ class EventCard extends StatelessWidget {
     required this.venue,
     required this.imageUrl,
     required this.description,
+    required this.clubname,
     this.onAnalytics,
   }) : super(key: key);
 
@@ -75,11 +77,10 @@ class EventCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: (){
-        Navigator.push(context, MaterialPageRoute(builder : (context) =>EventDetailsPage(imageUrl: imageUrl, description: description, title: title)));
+        Navigator.push(context, MaterialPageRoute(builder : (context) =>EventDetailsPage(imageUrl: imageUrl, description: description, title: title, registrations: registrations, club_name: clubname,)));
       },
       child: Card(
-       // color: Colors.white,
-        elevation: 2,
+       // elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -87,7 +88,15 @@ class EventCard extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(12)),
-              gradient: LinearGradient(colors: [Colors.blue[300]!,Colors.white],begin:Alignment.center,end: Alignment.bottomLeft)
+              gradient: LinearGradient(colors: [Colors.blue[50]!,Colors.white],begin:Alignment.center,end: Alignment.bottomLeft),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                spreadRadius: 2,
+                offset: Offset(2, 4),
+              )
+            ]
           ),
           child: Stack(
             children: [
@@ -99,7 +108,7 @@ class EventCard extends StatelessWidget {
                   height: 200,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.blue.withOpacity(0.05),
                   ),
                 ),
               ),
@@ -111,7 +120,7 @@ class EventCard extends StatelessWidget {
                   height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.blue.withOpacity(0.1),
                   ),
                 ),
               ),

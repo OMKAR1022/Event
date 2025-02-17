@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../../core/providers/student_event_provider.dart';
-import '../../../../../widgets/skeleton_card.dart';
-import 'event_card.dart';
-
+import '../../../Student/widget/student_event_card/event_card.dart';
 
 class EventList extends StatelessWidget {
   final String selectedCategory;
@@ -24,38 +22,27 @@ class EventList extends StatelessWidget {
     return Consumer<StudentEventProvider>(
       builder: (context, eventProvider, child) {
         if (eventProvider.isLoading) {
-          return SliverPadding(
-            padding: EdgeInsets.all(16.0),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) => SkeletonCard(),
-                childCount: 3,
-              ),
-            ),
-          );
-        }
+          return Center(child: CircularProgressIndicator());
+        } else if (eventProvider.events.isEmpty) {
+          return Center(child: Text('No events found'));
+        } else {
+          final filteredEvents = eventProvider.events.where((event) {
+            final matchesCategory = selectedCategory == "All Events" ||
+                event['category'] == selectedCategory;
+            final matchesSearch =
+            event['title'].toLowerCase().contains(searchQuery.toLowerCase());
+            return matchesCategory && matchesSearch;
+          }).toList();
 
-        final filteredEvents = _filterEvents(eventProvider.events, selectedCategory, searchQuery);
-
-        if (filteredEvents.isEmpty) {
-          return SliverFillRemaining(
-            child: Center(
-              child: Text(
-                'No events found.\nTry a different search or category.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-              ),
-            ),
-          );
-        }
-
-        return SliverPadding(
-          padding: EdgeInsets.all(10.0),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                final event = filteredEvents[index];
-                return EventCard(
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: filteredEvents.length,
+            itemBuilder: (context, index) {
+              final event = filteredEvents[index];
+              return Padding(
+                padding: EdgeInsets.only(bottom: 16),
+                child:  EventCard(
                   title: event['title'] ?? 'N/A',
                   date: event['date'] ?? 'N/A',
                   startTime: event['start_time']?.substring(0, 5) ?? 'N/A',
@@ -71,23 +58,13 @@ class EventList extends StatelessWidget {
                   clubName: event['clubs']['name'] ?? 'N/A',
                   currentStudentId: currentStudentId,
                   description: event['description'] ?? 'No description available.',
-                );
-              },
-              childCount: filteredEvents.length,
-            ),
-          ),
-        );
+                ),
+              );
+            },
+          );
+        }
       },
     );
-  }
-
-  List<Map<String, dynamic>> _filterEvents(List<Map<String, dynamic>> events, String category, String query) {
-    return events.where((event) {
-      final matchesSearch = event['title'].toString().toLowerCase().contains(query.toLowerCase()) ||
-          event['clubs']['name'].toString().toLowerCase().contains(query.toLowerCase());
-      final matchesCategory = category == "All" || event['category'] == category;
-      return matchesSearch && matchesCategory;
-    }).toList();
   }
 }
 

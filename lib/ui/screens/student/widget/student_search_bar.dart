@@ -15,10 +15,10 @@ class SearchBar_student extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: ScreenSize.height(context,17),
-      width: ScreenSize.width(context,1),
+      width: ScreenSize.width(context,1.1),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey[300]!),
         boxShadow: [
           BoxShadow(color: Colors.black12, blurRadius: 1, offset: Offset(-2, 2)),
